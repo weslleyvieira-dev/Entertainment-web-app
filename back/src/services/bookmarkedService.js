@@ -1,92 +1,47 @@
 import { prisma } from "../configs/database.js";
 
 export class BookmarkedService {
-  async listAll(userId) {
+  async listItems(userId, type = null) {
+    let select;
+
+    if (type) {
+      select = { [type]: true };
+    } else {
+      select = { movies: true, series: true };
+    }
     const result = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        movies: true,
-        series: true,
-      },
+      select,
     });
-    return result;
+    return type ? result[type] : result;
   }
 
-  async listMovies(userId) {
-    const result = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        movies: true,
-      },
-    });
-    return result.movies;
-  }
-
-  async listSeries(userId) {
-    const result = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        series: true,
-      },
-    });
-    return result.series;
-  }
-
-  async addMovie(userId, movieId) {
+  async addItem(userId, itemId, type) {
     const result = await prisma.user.update({
       where: { id: userId },
       data: {
-        movies: {
-          push: movieId,
+        [type]: {
+          push: itemId,
         },
       },
     });
 
-    return result.movies;
+    return result[type];
   }
 
-  async addSerie(userId, serieId) {
-    const result = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        series: {
-          push: serieId,
-        },
-      },
-    });
-
-    return result.series;
-  }
-
-  async removeMovie(userId, movieId) {
-    const movies = await this.listMovies(userId);
-    const updatedMovies = movies.filter((movie) => movie !== movieId);
+  async removeItem(userId, itemId, type) {
+    const items = await this.listAll(userId);
+    const updatedItems = items[type].filter((item) => item !== itemId);
 
     const result = await prisma.user.update({
       where: { id: userId },
       data: {
-        movies: {
-          set: updatedMovies,
+        [type]: {
+          set: updatedItems,
         },
       },
     });
 
-    return result.movies;
-  }
-
-  async removeSerie(userId, serieId) {
-    const series = await this.listSeries(userId);
-    const updatedSeries = series.filter((serie) => serie !== serieId);
-
-    const result = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        series: {
-          set: updatedSeries,
-        },
-      },
-    });
-
-    return result.series;
+    return result[type];
   }
 }

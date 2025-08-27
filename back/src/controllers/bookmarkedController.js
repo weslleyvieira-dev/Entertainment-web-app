@@ -6,71 +6,34 @@ export class BookmarkedController {
   async getAllBookmarked(req, res) {
     try {
       const userId = req.params.id;
-      const bookmarkeds = await bookmarkedService.listAll(userId);
-      res.status(200).send(bookmarkeds);
+      const type = req.query.type ?? null;
+      const items = await bookmarkedService.listItems(userId, type);
+      res.status(200).send(items);
     } catch (error) {
       console.error(error);
     }
   }
 
-  async getBookmarkedMovies(req, res) {
+  async addItem(req, res) {
     try {
       const userId = req.params.id;
-      const bookMovies = await bookmarkedService.listMovies(userId);
-      res.status(200).send(bookMovies);
+      const itemId = req.body.id;
+      const type = req.body.type;
+
+      const items = await bookmarkedService.addItem(userId, itemId, type);
+      res.status(200).send(items);
     } catch (error) {
       console.error(error);
     }
   }
 
-  async getBookmarkedSeries(req, res) {
+  async removeItem(req, res) {
     try {
       const userId = req.params.id;
-      const bookSeries = await bookmarkedService.listSeries(userId);
-      res.status(200).send(bookSeries);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+      const itemId = req.body.id;
+      const type = req.body.type;
 
-  async addMovie(req, res) {
-    try {
-      const userId = req.params.id;
-      const movieId = req.body.id;
-      const movie = await bookmarkedService.addMovie(userId, movieId);
-      res.status(200).send(movie);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async addSerie(req, res) {
-    try {
-      const userId = req.params.id;
-      const serieId = req.body.id;
-      const serie = await bookmarkedService.addSerie(userId, serieId);
-      res.status(200).send(serie);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async removeMovie(req, res) {
-    try {
-      const userId = req.params.id;
-      const movieId = req.body.id;
-      await bookmarkedService.removeMovie(userId, movieId);
-      res.status(204).send();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  async removeSerie(req, res) {
-    try {
-      const userId = req.params.id;
-      const serieId = req.body.id;
-      await bookmarkedService.removeSerie(userId, serieId);
+      await bookmarkedService.removeItem(userId, itemId, type);
       res.status(204).send();
     } catch (error) {
       console.error(error);
