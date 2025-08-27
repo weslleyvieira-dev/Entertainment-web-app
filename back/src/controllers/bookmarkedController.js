@@ -32,4 +32,48 @@ export class BookmarkedController {
       console.error(error);
     }
   }
+
+  async addMovie(req, res) {
+    try {
+      const userId = req.params.id;
+      const movieId = req.body.id;
+      const movie = await bookmarkedService.addMovie(userId, movieId);
+      res.status(200).send(movie);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async addSerie(req, res) {
+    try {
+      const userId = req.params.id;
+      const serieId = req.body.id;
+      const serie = await bookmarkedService.addSerie(userId, serieId);
+      res.status(200).send(serie);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async removeMovie(req, res) {
+    try {
+      const userId = req.params.id;
+      const movieId = req.body.id;
+      await bookmarkedService.removeMovie(userId, movieId);
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async removeSerie(req, res) {
+    try {
+      const userId = req.params.id;
+      const serieId = req.body.id;
+      await bookmarkedService.removeSerie(userId, serieId);
+      res.status(204).send();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }

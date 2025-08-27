@@ -19,7 +19,7 @@ export class BookmarkedService {
         movies: true,
       },
     });
-    return result;
+    return result.movies;
   }
 
   async listSeries(userId) {
@@ -29,6 +29,64 @@ export class BookmarkedService {
         series: true,
       },
     });
-    return result;
+    return result.series;
+  }
+
+  async addMovie(userId, movieId) {
+    const result = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        movies: {
+          push: movieId,
+        },
+      },
+    });
+
+    return result.movies;
+  }
+
+  async addSerie(userId, serieId) {
+    const result = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        series: {
+          push: serieId,
+        },
+      },
+    });
+
+    return result.series;
+  }
+
+  async removeMovie(userId, movieId) {
+    const movies = await this.listMovies(userId);
+    const updatedMovies = movies.filter((movie) => movie !== movieId);
+
+    const result = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        movies: {
+          set: updatedMovies,
+        },
+      },
+    });
+
+    return result.movies;
+  }
+
+  async removeSerie(userId, serieId) {
+    const series = await this.listSeries(userId);
+    const updatedSeries = series.filter((serie) => serie !== serieId);
+
+    const result = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        series: {
+          set: updatedSeries,
+        },
+      },
+    });
+
+    return result.series;
   }
 }
