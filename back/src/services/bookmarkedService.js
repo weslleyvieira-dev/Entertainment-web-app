@@ -30,7 +30,7 @@ export class BookmarkedService {
   }
 
   async removeItem(userId, itemId, type) {
-    const items = await this.listAll(userId);
+    const items = await this.listItems(userId);
     const updatedItems = items[type].filter((item) => item !== itemId);
 
     const result = await prisma.user.update({
