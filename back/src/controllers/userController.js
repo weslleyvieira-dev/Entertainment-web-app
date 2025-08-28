@@ -110,7 +110,7 @@ export class UserController {
         return res.status(401).send("User not found.");
       }
 
-      const { email, newEmail, password } = req.body;
+      let { email, newEmail, password } = req.body;
 
       if (!email || !newEmail || !password) {
         return res.status(422).send("Missing required fields.");
@@ -120,6 +120,18 @@ export class UserController {
         return res
           .status(422)
           .send("Your new email is the same as your current one.");
+      }
+
+      email = email.trim().toLowerCase();
+      newEmail = newEmail.trim().toLowerCase();
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        return res.status(422).send("Invalid email format.");
+      }
+
+      if (!emailRegex.test(newEmail)) {
+        return res.status(422).send("Invalid new email format.");
       }
 
       const checkEmail = await userService.findUserByEmail(newEmail);
