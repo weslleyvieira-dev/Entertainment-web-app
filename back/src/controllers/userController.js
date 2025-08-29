@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { UserService } from "../services/userService.js";
+import { TokenService } from "../services/tokenService.js";
 
 const userService = new UserService();
+const tokenService = new TokenService();
 
 export class UserController {
   async registerUser(req, res) {
@@ -68,30 +69,26 @@ export class UserController {
 
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        return res.status(422).send("Invalid email format.");
+        return res.status(422).send("Invalid email or password.");
       }
 
       const user = await userService.findUserByEmail(email);
       if (!user) {
-        return res.status(401).send("User not found.");
+        return res.status(401).send("Invalid email or password.");
       }
 
       const checkPassword = await bcrypt.compare(password, user.password);
 
       if (!checkPassword) {
-        return res.status(401).send("Invalid password.");
+        return res.status(401).send("Invalid email or password.");
       }
 
-      const secret = process.env.SECRET;
-      const token = jwt.sign(
-        {
-          id: user.id,
-        },
-        secret,
-        { expiresIn: "15m" }
-      );
+      const token = await tokenService.generateTokens(user);
 
-      return res.status(200).json({ msg: "Login successfull", token });
+      return res.status(200).json({
+        token: token,
+        msg: "Login successfull.",
+      });
     } catch (error) {
       console.error(error);
       return res
