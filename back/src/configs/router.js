@@ -11,6 +11,7 @@ const bookmarkedController = new BookmarkedController();
 
 router.post("/auth/login", userController.loginUser);
 router.post("/auth/register", userController.registerUser);
+router.post("/auth/logout", userController.logoutUser);
 router.post("/auth/refresh-token", tokenController.refreshToken);
 
 router.put("/users/:id/email", checkToken, userController.updateEmail);

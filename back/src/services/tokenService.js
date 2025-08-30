@@ -71,4 +71,14 @@ export class TokenService {
 
     return { accessToken, refreshTokenId };
   }
+
+  async revokeRefreshToken(refreshTokenId) {
+    const result = await prisma.refreshToken.deleteMany({
+      where: {
+        id: refreshTokenId,
+      },
+    });
+
+    return result.count;
+  }
 }

@@ -97,6 +97,31 @@ export class UserController {
     }
   }
 
+  async logoutUser(req, res) {
+    try {
+      if (!req.body) {
+        return res.status(400).send("Request body is missing.");
+      }
+
+      const { refreshTokenId } = req.body;
+
+      const result = await tokenService.revokeRefreshToken(refreshTokenId);
+
+      if (result > 0) {
+        return res.status(200).send("Logout successfully.");
+      } else {
+        return res
+          .status(400)
+          .send("Refresh token invalid or already removed.");
+      }
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .send("Internal server error. Please try again later.");
+    }
+  }
+
   async updateEmail(req, res) {
     try {
       const id = req.params.id;
