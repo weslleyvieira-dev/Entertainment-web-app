@@ -8,16 +8,24 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  password      String
-  movies        String[]
-  series        String[]
-  refresh_token RefreshToken?
+  id                   String              @id @default(uuid())
+  email                String              @unique
+  password             String
+  movies               String[]
+  series               String[]
+  refresh_token        RefreshToken?
+  password_reset_token PasswordResetToken?
 }
 
 model RefreshToken {
   id        String @id @default(uuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id])
+  expiresIn Int
+}
+
+model PasswordResetToken {
+  id        String @id
   userId    String @unique
   user      User   @relation(fields: [userId], references: [id])
   expiresIn Int

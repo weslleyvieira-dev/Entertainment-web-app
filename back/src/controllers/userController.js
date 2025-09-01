@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt";
+import dayjs from "dayjs";
+import transporter from "../configs/mailer.js";
 import { UserService } from "../services/userService.js";
 import { TokenService } from "../services/tokenService.js";
 
@@ -114,6 +116,107 @@ export class UserController {
           .status(400)
           .send("Refresh token invalid or already removed.");
       }
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .send("Internal server error. Please try again later.");
+    }
+  }
+
+  async forgotPassword(req, res) {
+    try {
+      let { email } = req.body;
+
+      if (!email) {
+        return res.status(422).send("Missing required fields.");
+      }
+
+      email = email.trim().toLowerCase();
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        return res.status(422).send("Invalid email format.");
+      }
+
+      const user = await userService.findUserByEmail(email);
+      if (!user) {
+        return res
+          .status(200)
+          .send(
+            "If the email is registered, you will receive instructions to reset your password shortly."
+          );
+      }
+
+      const resetToken = await tokenService.generatePasswordResetToken(user.id);
+
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: user.email,
+        subject: "Password Reset",
+        template: "forgotPassword",
+        context: { resetToken },
+      };
+
+      await transporter.sendMail(mailOptions),
+        (error) => {
+          if (error) {
+            console.log(error);
+            return res
+              .status(400)
+              .send("Error sending email, try again later.");
+          }
+        };
+
+      return res
+        .status(200)
+        .send(
+          "If the email is registered, you will receive instructions to reset your password shortly."
+        );
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .send("Internal server error. Please try again later.");
+    }
+  }
+
+  async resetPassword(req, res) {
+    try {
+      const { token } = req.params;
+      const { newPassword, newPasswordConfirm } = req.body;
+
+      if (!token || !newPassword || !newPasswordConfirm) {
+        return res.status(422).send("Missing required fields.");
+      }
+
+      if (newPassword !== newPasswordConfirm) {
+        return res
+          .status(422)
+          .send("New password and confirmation do not match.");
+      }
+
+      const { userId, expiresIn } = await tokenService.findPassResetTokenById(
+        token
+      );
+
+      if (!userId) {
+        return res.status(400).send("Invalid reset link.");
+      }
+
+      const dateNow = dayjs().unix();
+
+      if (dateNow > expiresIn) {
+        return res.status(410).send("Reset link expired.");
+      }
+
+      const salt = await bcrypt.genSalt(12);
+      const passwordHash = await bcrypt.hash(newPassword, salt);
+
+      await userService.updatePassword(userId, passwordHash);
+      await tokenService.revokePassResetToken(token);
+
+      return res.status(200).send("Password updated successfully.");
     } catch (error) {
       console.error(error);
       return res

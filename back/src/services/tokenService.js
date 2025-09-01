@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
+import crypto from "crypto";
 import { prisma } from "../configs/database.js";
 
 export class TokenService {
@@ -80,5 +81,50 @@ export class TokenService {
     });
 
     return result.count;
+  }
+
+  async generatePasswordResetToken(userId) {
+    const id = crypto.randomBytes(20).toString("hex");
+    const expiresIn = dayjs().add(30, "minute").unix();
+
+    await prisma.passwordResetToken.deleteMany({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const resetToken = await prisma.passwordResetToken.create({
+      data: {
+        id,
+        userId,
+        expiresIn,
+      },
+    });
+
+    return resetToken.id;
+  }
+
+  async revokePassResetToken(resetToken) {
+    const result = await prisma.passwordResetToken.deleteMany({
+      where: {
+        id: resetToken,
+      },
+    });
+
+    return result.count;
+  }
+
+  async findPassResetTokenById(resetToken) {
+    const result = await prisma.passwordResetToken.findUnique({
+      where: {
+        id: resetToken,
+      },
+      select: {
+        userId: true,
+        expiresIn: true,
+      },
+    });
+
+    return result;
   }
 }
