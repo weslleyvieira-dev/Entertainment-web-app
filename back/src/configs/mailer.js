@@ -3,12 +3,13 @@ import hbs from "nodemailer-express-handlebars";
 import path from "path";
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
+    type: "OAuth2",
     user: process.env.GOOGLE_USER,
-    pass: process.env.GOOGLE_PASS,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
   },
 });
 
