@@ -1,6 +1,6 @@
 import { prisma } from "../configs/database.js";
 
-export class BookmarkedService {
+export class BookmarkService {
   async listItems(userId, type = null) {
     let select;
 
@@ -13,6 +13,7 @@ export class BookmarkedService {
       where: { id: userId },
       select,
     });
+
     return type ? result[type] : result;
   }
 
