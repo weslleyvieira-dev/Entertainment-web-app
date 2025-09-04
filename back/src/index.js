@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
-import router from "./configs/router.js";
-import { specs, swaggerUi } from "./swagger.js";
+import router from "./routes/router.js";
+import { specs, swaggerUi } from "./configs/swagger.js";
 
 const app = express();
 

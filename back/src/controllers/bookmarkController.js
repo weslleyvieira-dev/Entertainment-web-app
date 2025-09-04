@@ -95,8 +95,8 @@ export class BookmarkController {
         };
       }
 
-      await bookmarkService.removeItem(userId, itemId, type);
-      res.status(204).end();
+      const items = await bookmarkService.removeItem(userId, itemId, type);
+      res.status(200).json({ [type]: items });
     } catch (error) {
       return res
         .status(error.status || 500)

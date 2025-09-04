@@ -272,6 +272,7 @@ export class UserController {
 
       await userService.updatePassword(userId, passwordHash);
       await tokenService.revokePasswordResetToken(token);
+      await tokenService.revokeRefreshToken(userId);
 
       return res.status(200).json({
         message: "Password updated successfully.",
@@ -428,6 +429,7 @@ export class UserController {
       const passwordHash = await bcrypt.hash(newPassword, salt);
 
       await userService.updatePassword(userId, passwordHash);
+      await tokenService.revokeRefreshToken(userId);
 
       return res.status(200).json({
         message: "Password updated successfully.",
