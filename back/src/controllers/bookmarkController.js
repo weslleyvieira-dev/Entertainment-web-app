@@ -33,13 +33,9 @@ export class BookmarkController {
 
       res.status(200).json(bookmarks);
     } catch (error) {
-      if (error.status) {
-        return res.status(error.status).json({ error: error.message });
-      } else {
-        return res
-          .status(500)
-          .json({ error: error.message || "Internal server error." });
-      }
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
@@ -70,13 +66,9 @@ export class BookmarkController {
 
       res.status(200).json({ [type]: items });
     } catch (error) {
-      if (error.status === 400) {
-        return res.status(400).json({ error: error.message });
-      } else {
-        return res
-          .status(500)
-          .json({ error: error.message || "Internal server error." });
-      }
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
@@ -106,13 +98,9 @@ export class BookmarkController {
       await bookmarkService.removeItem(userId, itemId, type);
       res.status(204).end();
     } catch (error) {
-      if (error.status === 400) {
-        return res.status(400).json({ error: error.message });
-      } else {
-        return res
-          .status(500)
-          .json({ error: error.message || "Internal server error." });
-      }
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 }

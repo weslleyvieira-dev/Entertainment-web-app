@@ -10,30 +10,55 @@ const tokenService = new TokenService();
 export class UserController {
   async registerUser(req, res) {
     try {
-      if (!req.body) {
-        return res.status(400).send("Request body is missing.");
+      let { email, confirmEmail, password, confirmPassword } = req.body;
+
+      email = email ? email.trim().toLowerCase() : null;
+      confirmEmail = confirmEmail ? confirmEmail.trim().toLowerCase() : null;
+      password = password ? password.trim() : null;
+      confirmPassword = confirmPassword ? confirmPassword.trim() : null;
+
+      if (!email || !confirmEmail || !password || !confirmPassword) {
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
       }
-
-      let { email, password, confirmPassword } = req.body;
-
-      if (!email || !password || !confirmPassword) {
-        return res.status(422).send("Missing required fields.");
-      }
-
-      email = email.trim().toLowerCase();
 
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        return res.status(422).send("Invalid email format.");
+        throw {
+          status: 422,
+          message: "Please enter a valid email address.",
+        };
+      }
+
+      if (email !== confirmEmail) {
+        throw {
+          status: 422,
+          message: "Email and confirmation email do not match.",
+        };
+      }
+
+      if (password.length < 8) {
+        throw {
+          status: 422,
+          message: "Password must be at least 8 characters.",
+        };
       }
 
       if (password !== confirmPassword) {
-        return res.status(422).send("Passwords do not match.");
+        throw {
+          status: 422,
+          message: "Password and confirmation password do not match.",
+        };
       }
 
-      const userExists = await userService.findUserByEmail(email);
-      if (userExists) {
-        return res.status(409).send("Email is already registered.");
+      const checkEmail = await userService.findUserByEmail(email);
+      if (checkEmail) {
+        throw {
+          status: 409,
+          message: "Email is already registered.",
+        };
       }
 
       const salt = await bcrypt.genSalt(12);
@@ -44,108 +69,122 @@ export class UserController {
         password: passwordHash,
       };
 
-      await userService.registerUser(user);
+      const createdUser = await userService.registerUser(user);
 
-      return res.status(201).send("User registered successfully.");
+      return res.status(201).json({
+        message: "User registered successfully.",
+      });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async loginUser(req, res) {
     try {
-      if (!req.body) {
-        return res.status(400).send("Request body is missing.");
-      }
-
       let { email, password } = req.body;
 
-      if (!email || !password) {
-        return res.status(422).send("Missing required fields.");
-      }
+      email = email ? email.trim().toLowerCase() : null;
+      password = password ? password.trim() : null;
 
-      email = email.trim().toLowerCase();
+      if (!email || !password) {
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
+      }
 
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        return res.status(422).send("Invalid email or password.");
+        throw {
+          status: 422,
+          message: "Please enter a valid email address.",
+        };
       }
 
       const user = await userService.findUserByEmail(email);
       if (!user) {
-        return res.status(401).send("Invalid email or password.");
+        throw {
+          status: 401,
+          message: "Invalid credentials.",
+        };
       }
 
       const checkPassword = await bcrypt.compare(password, user.password);
 
       if (!checkPassword) {
-        return res.status(401).send("Invalid email or password.");
+        throw {
+          status: 401,
+          message: "Invalid credentials.",
+        };
       }
 
       const token = await tokenService.generateTokens(user);
 
       return res.status(200).json({
+        message: "Login successful.",
+        user: {
+          email: user.email,
+        },
         token: token,
-        msg: "Login successfull.",
       });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async logoutUser(req, res) {
     try {
-      if (!req.body) {
-        return res.status(400).send("Request body is missing.");
-      }
+      const userId = req.userId;
 
-      const { refreshTokenId } = req.body;
-
-      const result = await tokenService.revokeRefreshToken(refreshTokenId);
+      const result = await tokenService.revokeRefreshToken(userId);
 
       if (result > 0) {
-        return res.status(200).send("Logout successfully.");
+        return res.status(200).json({
+          message: "Logout successful.",
+        });
       } else {
-        return res
-          .status(400)
-          .send("Refresh token invalid or already removed.");
+        throw {
+          status: 404,
+          message: "No active session found.",
+        };
       }
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async forgotPassword(req, res) {
     try {
       let { email } = req.body;
+      email = email ? email.trim().toLowerCase() : null;
 
       if (!email) {
-        return res.status(422).send("Missing required fields.");
+        throw {
+          status: 422,
+          message: "Email is required.",
+        };
       }
-
-      email = email.trim().toLowerCase();
 
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        return res.status(422).send("Invalid email format.");
+        throw {
+          status: 422,
+          message: "Please enter a valid email address.",
+        };
       }
 
       const user = await userService.findUserByEmail(email);
       if (!user) {
-        return res
-          .status(200)
-          .send(
-            "If the email is registered, you will receive instructions to reset your password shortly."
-          );
+        return res.status(200).json({
+          message:
+            "If the email is registered, you will receive instructions to reset your password shortly.",
+        });
       }
 
       const resetToken = await tokenService.generatePasswordResetToken(user.id);
@@ -158,175 +197,247 @@ export class UserController {
         context: { resetToken },
       };
 
-      await transporter.sendMail(mailOptions),
-        (error) => {
-          if (error) {
-            console.log(error);
-            return res
-              .status(400)
-              .send("Error sending email, try again later.");
-          }
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
         };
+      }
 
-      return res
-        .status(200)
-        .send(
-          "If the email is registered, you will receive instructions to reset your password shortly."
-        );
+      return res.status(200).json({
+        message:
+          "If the email is registered, you will receive instructions to reset your password shortly.",
+      });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async resetPassword(req, res) {
     try {
       const { token } = req.params;
-      const { newPassword, newPasswordConfirm } = req.body;
+      let { newPassword, newPasswordConfirm } = req.body;
+
+      newPassword = newPassword ? newPassword.trim() : null;
+      newPasswordConfirm = newPasswordConfirm
+        ? newPasswordConfirm.trim()
+        : null;
 
       if (!token || !newPassword || !newPasswordConfirm) {
-        return res.status(422).send("Missing required fields.");
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
+      }
+
+      if (newPassword.length < 8 || newPasswordConfirm.length < 8) {
+        throw {
+          status: 422,
+          message: "Password must be at least 8 characters.",
+        };
       }
 
       if (newPassword !== newPasswordConfirm) {
-        return res
-          .status(422)
-          .send("New password and confirmation do not match.");
+        throw {
+          status: 422,
+          message: "Password and confirmation password do not match.",
+        };
       }
 
-      const { userId, expiresIn } = await tokenService.findPassResetTokenById(
-        token
-      );
+      const { userId, expiresIn } =
+        await tokenService.findPasswordResetTokenById(token);
 
-      if (!userId) {
-        return res.status(400).send("Invalid reset link.");
+      if (!userId || !expiresIn) {
+        throw {
+          status: 400,
+          message: "Invalid or expired reset link.",
+        };
       }
 
       const dateNow = dayjs().unix();
 
       if (dateNow > expiresIn) {
-        return res.status(410).send("Reset link expired.");
+        throw {
+          status: 400,
+          message: "Invalid or expired reset link.",
+        };
       }
 
       const salt = await bcrypt.genSalt(12);
       const passwordHash = await bcrypt.hash(newPassword, salt);
 
       await userService.updatePassword(userId, passwordHash);
-      await tokenService.revokePassResetToken(token);
+      await tokenService.revokePasswordResetToken(token);
 
-      return res.status(200).send("Password updated successfully.");
+      return res.status(200).json({
+        message: "Password updated successfully.",
+      });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async updateEmail(req, res) {
     try {
-      const id = req.params.id;
-
-      let user = await userService.findUserById(id);
-
-      if (!user) {
-        return res.status(401).send("User not found.");
-      }
-
+      const userId = req.userId;
+      let user = await userService.findUserById(userId);
       let { email, newEmail, password } = req.body;
 
+      email = email ? email.trim().toLowerCase() : null;
+      newEmail = newEmail ? newEmail.trim().toLowerCase() : null;
+      password = password ? password.trim() : null;
+
+      if (!user) {
+        throw {
+          status: 404,
+          message: "User not found.",
+        };
+      }
+
       if (!email || !newEmail || !password) {
-        return res.status(422).send("Missing required fields.");
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
       }
 
       if (email === newEmail) {
-        return res
-          .status(422)
-          .send("Your new email is the same as your current one.");
+        throw {
+          status: 422,
+          message: "Your new email is the same as your current one.",
+        };
       }
-
-      email = email.trim().toLowerCase();
-      newEmail = newEmail.trim().toLowerCase();
 
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(email)) {
-        return res.status(422).send("Invalid email format.");
+        throw {
+          status: 422,
+          message: "Invalid email format.",
+        };
       }
 
       if (!emailRegex.test(newEmail)) {
-        return res.status(422).send("Invalid new email format.");
+        throw {
+          status: 422,
+          message: "Invalid new email format.",
+        };
       }
 
-      const checkEmail = await userService.findUserByEmail(newEmail);
+      const checkEmail = await userService.findUserByEmail(email);
+      const checkNewEmail = await userService.findUserByEmail(newEmail);
 
-      if (checkEmail) {
-        return res.status(401).send("New email is already in use.");
+      if (!checkEmail || checkEmail.email !== user.email) {
+        throw {
+          status: 401,
+          message: "Invalid credentials.",
+        };
+      }
+      if (checkNewEmail) {
+        throw {
+          status: 409,
+          message: "New email is already registered.",
+        };
       }
 
       const checkPassword = await bcrypt.compare(password, user.password);
 
       if (!checkPassword) {
-        return res.status(401).send("Invalid password.");
+        throw {
+          status: 401,
+          message: "Invalid credentials.",
+        };
       }
 
-      user = await userService.updateEmail(id, newEmail);
+      user = await userService.updateEmail(userId, newEmail);
 
       return res.status(200).json({
+        message: "Email updated successfully.",
         id: user.id,
         email: user.email,
       });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 
   async updatePassword(req, res) {
     try {
-      const id = req.params.id;
+      const userId = req.userId;
 
-      let user = await userService.findUserById(id);
+      let user = await userService.findUserById(userId);
+      let { password, newPassword, newPasswordConfirm } = req.body;
+
+      password = password ? password.trim() : null;
+      newPassword = newPassword ? newPassword.trim() : null;
+      newPasswordConfirm = newPasswordConfirm
+        ? newPasswordConfirm.trim()
+        : null;
 
       if (!user) {
-        return res.status(401).send("User not found.");
+        throw {
+          status: 404,
+          message: "User not found.",
+        };
       }
 
-      const { password, newPassword, newPasswordConfirm } = req.body;
-
       if (!password || !newPassword || !newPasswordConfirm) {
-        return res.status(422).send("Missing required fields.");
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
       }
 
       if (password === newPassword) {
-        return res.status(422).send("Passwords are the same.");
+        throw {
+          status: 422,
+          message: "Your new password is the same as your current one.",
+        };
+      }
+
+      if (newPassword.length < 8 || newPasswordConfirm.length < 8) {
+        throw {
+          status: 422,
+          message: "Password must be at least 8 characters.",
+        };
       }
 
       if (newPassword !== newPasswordConfirm) {
-        return res
-          .status(422)
-          .send("New password and confirmation do not match.");
+        throw {
+          status: 422,
+          message: "Password and confirmation password do not match.",
+        };
       }
 
       const checkPassword = await bcrypt.compare(password, user.password);
       if (!checkPassword) {
-        return res.status(401).send("Invalid password.");
+        throw {
+          status: 401,
+          message: "Invalid credentials.",
+        };
       }
 
       const salt = await bcrypt.genSalt(12);
       const passwordHash = await bcrypt.hash(newPassword, salt);
 
-      await userService.updatePassword(id, passwordHash);
+      await userService.updatePassword(userId, passwordHash);
 
-      return res.status(200).send("Password updated successfully.");
+      return res.status(200).json({
+        message: "Password updated successfully.",
+        id: user.id,
+        email: user.email,
+      });
     } catch (error) {
-      console.error(error);
       return res
-        .status(500)
-        .send("Internal server error. Please try again later.");
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 }

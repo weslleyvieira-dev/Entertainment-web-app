@@ -14,7 +14,6 @@ export class TokenService {
 
       return { accessToken, refreshToken };
     } catch (error) {
-      console.error(error);
       throw new Error("Error generating tokens.");
     }
   }
@@ -73,10 +72,10 @@ export class TokenService {
     return { accessToken, refreshTokenId };
   }
 
-  async revokeRefreshToken(refreshTokenId) {
+  async revokeRefreshToken(userId) {
     const result = await prisma.refreshToken.deleteMany({
       where: {
-        id: refreshTokenId,
+        userId: userId,
       },
     });
 
@@ -104,7 +103,7 @@ export class TokenService {
     return resetToken.id;
   }
 
-  async revokePassResetToken(resetToken) {
+  async revokePasswordResetToken(resetToken) {
     const result = await prisma.passwordResetToken.deleteMany({
       where: {
         id: resetToken,
@@ -114,7 +113,7 @@ export class TokenService {
     return result.count;
   }
 
-  async findPassResetTokenById(resetToken) {
+  async findPasswordResetTokenById(resetToken) {
     const result = await prisma.passwordResetToken.findUnique({
       where: {
         id: resetToken,

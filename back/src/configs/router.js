@@ -11,13 +11,14 @@ const bookmarkController = new BookmarkController();
 
 router.post("/auth/login", userController.loginUser);
 router.post("/auth/register", userController.registerUser);
-router.post("/auth/logout", userController.logoutUser);
+router.post("/auth/logout", checkToken, userController.logoutUser);
 router.post("/auth/refresh-token", tokenController.refreshToken);
-router.post("/auth/reset-password", userController.forgotPassword);
-router.post("/auth/reset-password/:token", userController.resetPassword);
 
-router.put("/users/:id/email", checkToken, userController.updateEmail);
-router.put("/users/:id/password", checkToken, userController.updatePassword);
+router.post("/auth/password/forgot", userController.forgotPassword);
+router.post("/auth/password/reset/:token", userController.resetPassword);
+
+router.put("/me/email", checkToken, userController.updateEmail);
+router.put("/me/password", checkToken, userController.updatePassword);
 
 router.get("/me/bookmarks", checkToken, bookmarkController.getBookmarks);
 router.post("/me/bookmarks", checkToken, bookmarkController.addItem);

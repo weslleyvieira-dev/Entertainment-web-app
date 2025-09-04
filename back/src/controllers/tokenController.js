@@ -5,14 +5,14 @@ const tokenService = new TokenService();
 export class TokenController {
   async refreshToken(req, res) {
     try {
-      if (!req.body) {
-        return res.status(400).send("Request body is missing.");
-      }
+      let { refreshTokenId } = req.body;
+      refreshTokenId = refreshTokenId ? refreshTokenId.trim() : null;
 
-      const { refreshTokenId } = req.body;
-
-      if (!refreshTokenId || !refreshTokenId.trim()) {
-        return res.status(422).send("Missing refresh token.");
+      if (!refreshTokenId) {
+        throw {
+          status: 422,
+          message: "Missing refresh token.",
+        };
       }
 
       const { accessToken, refreshToken } =
@@ -20,14 +20,13 @@ export class TokenController {
 
       return res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
-      console.log(error);
       if (error.message === "Refresh token invalid.") {
-        return res.status(401).send("Refresh token invalid.");
-      } else {
-        return res
-          .status(500)
-          .send("Internal server error. Please try again later.");
+        error.status = 401;
       }
+
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
     }
   }
 }

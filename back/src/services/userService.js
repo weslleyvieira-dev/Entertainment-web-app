@@ -8,6 +8,9 @@ export class UserService {
         email,
         password,
       },
+      select: {
+        email: true,
+      },
     });
 
     return result;
@@ -31,6 +34,8 @@ export class UserService {
         password: newPassword,
       },
     });
+
+    return result;
   }
 
   async findUserByEmail(email) {
