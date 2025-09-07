@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
 import hbs from "nodemailer-express-handlebars";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -13,15 +17,17 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const templatesPath = path.resolve(__dirname, "../utils/templates/emails");
+
 transporter.use(
   "compile",
   hbs({
     viewEngine: {
       extName: ".html",
-      partialsDir: path.resolve("./src/utils/templates/emails"),
+      partialsDir: templatesPath,
       defaultLayout: false,
     },
-    viewPath: path.resolve("./src/utils/templates/emails"),
+    viewPath: templatesPath,
     extName: ".html",
   })
 );

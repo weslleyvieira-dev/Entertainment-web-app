@@ -1,10 +1,18 @@
 import "dotenv/config";
 import express from "express";
+import path from "path";
 import router from "./routes/router.js";
 import { specs, swaggerUi } from "./configs/swagger.js";
 
 const app = express();
 
+const swaggerDistPath = path.join(
+  process.cwd(),
+  "node_modules",
+  "swagger-ui-dist"
+);
+
+app.use("/docs", express.static(swaggerDistPath, { index: false }));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(express.json());
 
@@ -17,6 +25,11 @@ app.use((req, res, next) => {
 
 app.use("/", router);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`App running on ${process.env.PORT || "http://localhost:3000/"}`);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  if (process.env.PORT) {
+    console.log("Server running in production environment.");
+  } else {
+    console.log(`App running locally at http://localhost:${port}/`);
+  }
 });

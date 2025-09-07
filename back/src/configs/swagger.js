@@ -1,5 +1,10 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const options = {
   definition: {
@@ -8,7 +13,13 @@ const options = {
       title: "Entertainment Web App API",
       version: "0.5",
     },
-    servers: [{ url: "http://localhost:3000", description: "Local Server" }],
+    servers: [
+      { url: "http://localhost:3000", description: "Localhost" },
+      {
+        url: "https://entertainment-web-app-back-wellsz.vercel.app",
+        description: "Vercel Production",
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -26,7 +37,7 @@ const options = {
       { name: "User", description: "User management routes" },
     ],
   },
-  apis: ["src/routes/*"],
+  apis: [path.resolve(__dirname, "../routes/*.js")],
 };
 
 const specs = swaggerJsdoc(options);
