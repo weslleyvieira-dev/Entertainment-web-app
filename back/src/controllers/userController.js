@@ -71,6 +71,22 @@ export class UserController {
 
       const createdUser = await userService.registerUser(user);
 
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: createdUser.email,
+        subject: "Welcome to Entertainment Web App!",
+        template: "registerConfirmation",
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
+
       return res.status(201).json({
         message: "User registered successfully.",
       });
@@ -187,7 +203,8 @@ export class UserController {
         });
       }
 
-      const resetToken = await tokenService.generatePasswordResetToken(user.id);
+      const type = "PASSWORD_RESET";
+      const resetToken = await tokenService.generateEmailToken(user.id, type);
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,
@@ -248,19 +265,31 @@ export class UserController {
         };
       }
 
-      const { userId, expiresIn } =
-        await tokenService.findPasswordResetTokenById(token);
+      const tokenData = await tokenService.findEmailTokenById(token);
 
-      if (!userId || !expiresIn) {
+      if (
+        !tokenData ||
+        !tokenData.userId ||
+        !tokenData.expiresIn ||
+        !tokenData.type
+      ) {
         throw {
           status: 400,
           message: "Invalid or expired reset link.",
         };
       }
 
+      const { userId, expiresIn, type } = tokenData;
       const dateNow = dayjs().unix();
 
       if (dateNow > expiresIn) {
+        throw {
+          status: 400,
+          message: "Invalid or expired reset link.",
+        };
+      }
+
+      if (type !== "PASSWORD_RESET") {
         throw {
           status: 400,
           message: "Invalid or expired reset link.",
@@ -271,8 +300,26 @@ export class UserController {
       const passwordHash = await bcrypt.hash(newPassword, salt);
 
       await userService.updatePassword(userId, passwordHash);
-      await tokenService.revokePasswordResetToken(token);
+      await tokenService.revokeEmailToken(token);
       await tokenService.revokeRefreshToken(userId);
+
+      const user = await userService.findUserById(userId);
+
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: user.email,
+        subject: "Your password has been changed",
+        template: "passwordChanged",
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
 
       return res.status(200).json({
         message: "Password updated successfully.",
@@ -357,6 +404,22 @@ export class UserController {
 
       user = await userService.updateEmail(userId, newEmail);
 
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: [user.email, email],
+        subject: "Your email address has been updated",
+        template: "dataUpdated",
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
+
       return res.status(200).json({
         message: "Email updated successfully.",
         id: user.id,
@@ -429,7 +492,22 @@ export class UserController {
       const passwordHash = await bcrypt.hash(newPassword, salt);
 
       await userService.updatePassword(userId, passwordHash);
-      await tokenService.revokeRefreshToken(userId);
+
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: user.email,
+        subject: "Your password has been updated",
+        template: "dataUpdated",
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
 
       return res.status(200).json({
         message: "Password updated successfully.",

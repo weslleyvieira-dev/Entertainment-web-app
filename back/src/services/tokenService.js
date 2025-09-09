@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 import crypto from "crypto";
 import { prisma } from "../configs/database.js";
+import { EmailTokenType } from "@prisma/client";
 
 export class TokenService {
   async generateTokens(user) {
@@ -82,45 +83,53 @@ export class TokenService {
     return result.count;
   }
 
-  async generatePasswordResetToken(userId) {
+  async generateEmailToken(userId, type) {
     const id = crypto.randomBytes(20).toString("hex");
     const expiresIn = dayjs().add(30, "minute").unix();
+    const enumType = EmailTokenType[type];
 
-    await prisma.passwordResetToken.deleteMany({
+    if (!enumType) {
+      throw new Error("Invalid email token type.");
+    }
+
+    await prisma.emailToken.deleteMany({
       where: {
         userId: userId,
+        type: enumType,
       },
     });
 
-    const resetToken = await prisma.passwordResetToken.create({
+    const resetToken = await prisma.emailToken.create({
       data: {
         id,
         userId,
         expiresIn,
+        type: enumType,
       },
     });
 
     return resetToken.id;
   }
 
-  async revokePasswordResetToken(resetToken) {
-    const result = await prisma.passwordResetToken.deleteMany({
+  async revokeEmailToken(token) {
+    const result = await prisma.emailToken.deleteMany({
       where: {
-        id: resetToken,
+        id: token,
       },
     });
 
     return result.count;
   }
 
-  async findPasswordResetTokenById(resetToken) {
-    const result = await prisma.passwordResetToken.findUnique({
+  async findEmailTokenById(token) {
+    const result = await prisma.emailToken.findUnique({
       where: {
-        id: resetToken,
+        id: token,
       },
       select: {
         userId: true,
         expiresIn: true,
+        type: true,
       },
     });
 

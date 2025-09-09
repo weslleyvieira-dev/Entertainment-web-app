@@ -7,26 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum EmailTokenType {
+  ACCOUNT_DELETION
+  PASSWORD_RESET
+}
+
 model User {
-  id                   String              @id @default(uuid())
-  email                String              @unique
+  id                   String         @id @default(uuid())
+  email                String         @unique
   password             String
   movies               String[]
   series               String[]
-  refresh_token        RefreshToken?
-  password_reset_token PasswordResetToken?
+  refresh_token        RefreshToken[]
+  password_reset_token EmailToken[]
 }
 
 model RefreshToken {
   id        String @id @default(uuid())
-  userId    String @unique
+  userId    String
   user      User   @relation(fields: [userId], references: [id])
   expiresIn Int
 }
 
-model PasswordResetToken {
-  id        String @id
-  userId    String @unique
-  user      User   @relation(fields: [userId], references: [id])
+model EmailToken {
+  id        String         @id
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
   expiresIn Int
+  type      EmailTokenType
 }
