@@ -75,7 +75,7 @@ export class UserController {
         from: process.env.GOOGLE_USER,
         to: createdUser.email,
         subject: "Welcome to Entertainment Web App!",
-        template: "registerConfirmation",
+        template: "confirmRegister",
       };
 
       try {
@@ -204,14 +204,14 @@ export class UserController {
       }
 
       const type = "PASSWORD_RESET";
-      const resetToken = await tokenService.generateEmailToken(user.id, type);
+      const emailToken = await tokenService.generateEmailToken(user.id, type);
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,
         to: user.email,
         subject: "Password Reset",
-        template: "forgotPassword",
-        context: { resetToken },
+        template: "requestPasswordReset",
+        context: { emailToken },
       };
 
       try {
@@ -309,7 +309,7 @@ export class UserController {
         from: process.env.GOOGLE_USER,
         to: user.email,
         subject: "Your password has been changed",
-        template: "passwordChanged",
+        template: "confirmPasswordChanged",
       };
 
       try {
@@ -408,7 +408,7 @@ export class UserController {
         from: process.env.GOOGLE_USER,
         to: [user.email, email],
         subject: "Your email address has been updated",
-        template: "dataUpdated",
+        template: "notifyDataUpdated",
       };
 
       try {
@@ -497,7 +497,7 @@ export class UserController {
         from: process.env.GOOGLE_USER,
         to: user.email,
         subject: "Your password has been updated",
-        template: "dataUpdated",
+        template: "notifyDataUpdated",
       };
 
       try {

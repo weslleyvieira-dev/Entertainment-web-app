@@ -240,11 +240,12 @@ router.post("/request-delete", checkToken, userController.requestDeleteUser);
 /**
  * @swagger
  * /me/confirm-delete/{token}:
- *   post:
+ *   delete:
  *     tags:
  *       - User
  *     summary: Confirm account deletion
  *     description: Confirms account deletion using the token sent by email.
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: token
@@ -286,6 +287,6 @@ router.post("/request-delete", checkToken, userController.requestDeleteUser);
  *                   type: string
  *                   example: Internal server error.
  */
-router.post("/confirm-delete/:token", userController.confirmDeleteUser);
+router.delete("/confirm-delete/:token", userController.confirmDeleteUser);
 
 export default router;
