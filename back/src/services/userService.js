@@ -38,6 +38,16 @@ export class UserService {
     return result;
   }
 
+  async deleteUser(userId) {
+    const result = await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return result;
+  }
+
   async findUserByEmail(email) {
     const result = await prisma.user.findUnique({
       where: { email: email },

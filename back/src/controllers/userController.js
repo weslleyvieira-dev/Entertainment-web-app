@@ -520,4 +520,119 @@ export class UserController {
         .json({ error: error.message || "Internal server error." });
     }
   }
+
+  async requestDeleteUser(req, res) {
+    try {
+      const userId = req.userId;
+      const user = await userService.findUserById(userId);
+
+      if (!user) {
+        throw {
+          status: 404,
+          message: "User not found.",
+        };
+      }
+
+      const type = "ACCOUNT_DELETION";
+      const emailToken = await tokenService.generateEmailToken(user.id, type);
+
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: user.email,
+        subject: "Account Deletion Request",
+        template: "requestAccountDeletion",
+        context: { emailToken },
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
+
+      return res.status(200).json({
+        message:
+          "If the email is registered, you will receive instructions to delete your account shortly.",
+      });
+    } catch (error) {
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
+    }
+  }
+
+  async confirmDeleteUser(req, res) {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        throw {
+          status: 422,
+          message: "All fields are required.",
+        };
+      }
+
+      const tokenData = await tokenService.findEmailTokenById(token);
+
+      if (
+        !tokenData ||
+        !tokenData.userId ||
+        !tokenData.expiresIn ||
+        !tokenData.type
+      ) {
+        throw {
+          status: 400,
+          message: "Invalid or expired reset link.",
+        };
+      }
+
+      const { userId, expiresIn, type } = tokenData;
+      const dateNow = dayjs().unix();
+
+      if (dateNow > expiresIn || type !== "ACCOUNT_DELETION") {
+        throw {
+          status: 400,
+          message: "Invalid or expired reset link.",
+        };
+      }
+
+      const user = await userService.findUserById(userId);
+
+      if (!user) {
+        throw {
+          status: 404,
+          message: "User not found.",
+        };
+      }
+
+      await tokenService.revokeEmailToken(token);
+      await tokenService.revokeRefreshToken(userId);
+      await userService.deleteUser(userId);
+
+      const mailOptions = {
+        from: process.env.GOOGLE_USER,
+        to: user.email,
+        subject: "Your account has been deleted",
+        template: "confirmAccountDeleted",
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+      } catch (error) {
+        throw {
+          status: 503,
+          message: "Error sending email, try again later.",
+        };
+      }
+
+      return res.status(204).send();
+    } catch (error) {
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
+    }
+  }
 }

@@ -183,4 +183,109 @@ router.put("/email", checkToken, userController.updateEmail);
  */
 router.put("/password", checkToken, userController.updatePassword);
 
+/**
+ * @swagger
+ * /me/request-delete:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Request account deletion
+ *     description: Sends an email with a confirmation link to delete the authenticated user's account.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: If the email is registered, you will receive instructions to delete your account shortly.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: If the email is registered, you will receive instructions to delete your account shortly.
+ *       401:
+ *         description: Unauthorized. Invalid or missing token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized.
+ *       404:
+ *         description: User not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+router.post("/request-delete", checkToken, userController.requestDeleteUser);
+
+/**
+ * @swagger
+ * /me/confirm-delete/{token}:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Confirm account deletion
+ *     description: Confirms account deletion using the token sent by email.
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token received by email to confirm account deletion.
+ *     responses:
+ *       204:
+ *         description: User deleted successfully.
+ *       400:
+ *         description: Invalid or expired token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid or expired delete link.
+ *       404:
+ *         description: User not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: User not found.
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error.
+ */
+router.post("/confirm-delete/:token", userController.confirmDeleteUser);
+
 export default router;
