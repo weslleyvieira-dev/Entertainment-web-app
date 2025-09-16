@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import cors from "cors";
 import router from "./routes/router.js";
 import { specs, swaggerUi } from "./configs/swagger.js";
 
@@ -15,6 +16,7 @@ const swaggerDistPath = path.join(
 app.use("/docs", express.static(swaggerDistPath, { index: false }));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(express.json());
+app.use(cors());
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
