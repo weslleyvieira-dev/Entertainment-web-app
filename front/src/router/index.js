@@ -5,7 +5,8 @@ const Login = () => import("@/pages/Login.vue");
 export default createRouter({
   history: createWebHistory(),
   routes: [
-    { path: "/login", name: Login, component: Login },
-    { path: "/home" },
+    { path: "/", redirect: "/login" },
+    { path: "/login", name: "login", component: Login },
+    { path: "/:pathMatch(.*)*", redirect: "/login" },
   ],
 });
