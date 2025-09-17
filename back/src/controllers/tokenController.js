@@ -5,23 +5,28 @@ const tokenService = new TokenService();
 export class TokenController {
   async refreshToken(req, res) {
     try {
-      let { refreshTokenId } = req.body;
-      refreshTokenId = refreshTokenId ? refreshTokenId.trim() : null;
+      const refreshTokenId = req.cookies?.refreshToken?.trim();
 
       if (!refreshTokenId) {
         throw {
-          status: 422,
+          status: 401,
           message: "Missing refresh token.",
         };
       }
 
-      const { accessToken, refreshToken } =
-        await tokenService.refreshAccessToken(refreshTokenId);
+      const accessToken = await tokenService.refreshAccessToken(refreshTokenId);
 
-      return res.status(200).json({ accessToken, refreshToken });
+      res.set("Cache-Control", "no-store");
+      return res.status(200).json({ accessToken });
     } catch (error) {
       if (error.message === "Refresh token invalid.") {
         error.status = 401;
+        res.clearCookie("refreshToken", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "Lax",
+          path: "/",
+        });
       }
 
       return res

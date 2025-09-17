@@ -1,22 +1,16 @@
-import { login } from "@/api/backendApi";
-import Cookies from "js-cookie";
+import { backendApi } from "@/api/backendApi";
+import { authTokenStore } from "@/stores/authTokenStore.js";
 
 export default class AuthService {
-  async authenticateUser(loginData) {
-    try {
-      const response = await login(loginData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  storeTokens(tokens) {
-    localStorage.setItem("accessToken", tokens.accessToken);
-    Cookies.set("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
+  async authenticateUser(credentials) {
+    const { data } = await backendApi.post("/auth/login", credentials, {
+      _skipAutoRefresh: true,
+      _skipAuth: true,
     });
+    const store = authTokenStore();
+    if (data?.accessToken) {
+      store.setSession(data.accessToken, data.user);
+    }
+    return data;
   }
 }

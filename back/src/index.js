@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import path from "path";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import router from "./routes/router.js";
 import { specs, swaggerUi } from "./configs/swagger.js";
 
@@ -13,17 +14,22 @@ const swaggerDistPath = path.join(
   "swagger-ui-dist"
 );
 
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+
 app.use("/docs", express.static(swaggerDistPath, { index: false }));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
+  })
+);
 
 app.use("/", router);
 

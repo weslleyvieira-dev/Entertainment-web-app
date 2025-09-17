@@ -56,21 +56,17 @@ export class TokenService {
       throw new Error("Refresh token invalid.");
     }
 
+    const isExpired = dayjs().isAfter(dayjs.unix(storedRefreshToken.expiresIn));
+
+    if (isExpired) {
+      await prisma.refreshToken.delete({ where: { id: refreshTokenId } });
+      throw new Error("Refresh token expired.");
+    }
+
     const accessToken = await this.generateAccessToken(
       storedRefreshToken.userId
     );
-    const refreshTokenExpired = dayjs().isAfter(
-      dayjs.unix(storedRefreshToken.expiresIn)
-    );
-
-    if (refreshTokenExpired) {
-      const newRefreshToken = await this.generateRefreshToken(
-        storedRefreshToken.userId
-      );
-      return { accessToken, refreshToken: newRefreshToken };
-    }
-
-    return { accessToken, refreshTokenId };
+    return accessToken;
   }
 
   async revokeRefreshToken(userId) {

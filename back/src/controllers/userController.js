@@ -138,12 +138,19 @@ export class UserController {
 
       const token = await tokenService.generateTokens(user);
 
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      res.cookie("refreshToken", token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Lax",
+        maxAge: THIRTY_DAYS_MS,
+        path: "/",
+      });
+
+      res.set("Cache-Control", "no-store");
       return res.status(200).json({
-        message: "Login successful.",
-        user: {
-          email: user.email,
-        },
-        token: token,
+        accessToken: token.accessToken,
+        user: { id: user.id, email: user.email },
       });
     } catch (error) {
       return res
@@ -155,19 +162,18 @@ export class UserController {
   async logoutUser(req, res) {
     try {
       const userId = req.userId;
+      await tokenService.revokeRefreshToken(userId);
 
-      const result = await tokenService.revokeRefreshToken(userId);
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Lax",
+        path: "/",
+      });
 
-      if (result > 0) {
-        return res.status(200).json({
-          message: "Logout successful.",
-        });
-      } else {
-        throw {
-          status: 404,
-          message: "No active session found.",
-        };
-      }
+      return res.status(200).json({
+        message: "Logout successful.",
+      });
     } catch (error) {
       return res
         .status(error.status || 500)
@@ -611,6 +617,13 @@ export class UserController {
       await tokenService.revokeEmailToken(token);
       await tokenService.revokeRefreshToken(userId);
       await userService.deleteUser(userId);
+
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Lax",
+        path: "/",
+      });
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,

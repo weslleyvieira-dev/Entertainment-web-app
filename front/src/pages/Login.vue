@@ -25,7 +25,6 @@ const errors = reactive({
 async function handleLogin() {
   if (isSubmitted.value) return;
   isSubmitted.value = true;
-
   Object.keys(errors).forEach((key) => (errors[key] = ""));
 
   if (!validateLogin()) {
@@ -34,8 +33,7 @@ async function handleLogin() {
   }
 
   try {
-    const userData = await authService.authenticateUser(loginData);
-    authService.storeTokens(userData.token);
+    await authService.authenticateUser(loginData);
     router.push("/home");
   } catch (error) {
     handleError(error);
@@ -69,9 +67,7 @@ function handleError(error) {
       case 422:
         errors.email = " ";
         errors.password = " ";
-        toast.error(
-          "Invalid credentials. Please check your email and password and try again."
-        );
+        toast.error("Please check your email and password and try again.");
         break;
       case 500:
         toast.error("An error occurred on the server. Please try again later.");

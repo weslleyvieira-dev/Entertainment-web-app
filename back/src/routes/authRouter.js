@@ -117,8 +117,8 @@ router.post("/register", userController.registerUser);
  *                   properties:
  *                     email:
  *                       type: string
- *                 token:
- *                   type: object
+ *                 accessToken:
+ *                   type: string
  *       401:
  *         description: Invalid credentials.
  *         content:
@@ -213,18 +213,9 @@ router.post("/logout", checkToken, userController.logoutUser);
  *     tags:
  *       - Auth
  *     summary: Refresh JWT token
- *     description: Generates a new access token using a refresh token.
- *     security: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshTokenId:
- *                 type: string
- *                 example: "refreshTokenId123"
+ *     description: Generates a new access token using a refresh token stored in a cookie.
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Tokens generated successfully.
@@ -234,8 +225,6 @@ router.post("/logout", checkToken, userController.logoutUser);
  *               type: object
  *               properties:
  *                 accessToken:
- *                   type: string
- *                 refreshToken:
  *                   type: string
  *       401:
  *         description: Refresh token invalid.
