@@ -2,15 +2,32 @@ import { backendApi } from "@/api/backendApi";
 import { authTokenStore } from "@/stores/authTokenStore.js";
 
 export default class AuthService {
-  async authenticateUser(credentials) {
-    const { data } = await backendApi.post("/auth/login", credentials, {
+  async loginUser(credentials) {
+    const response = await backendApi.post("/auth/login", credentials, {
       _skipAutoRefresh: true,
       _skipAuth: true,
     });
     const store = authTokenStore();
-    if (data?.accessToken) {
-      store.setSession(data.accessToken, data.user);
+
+    if (response.data?.accessToken) {
+      store.setSession(response.data.accessToken, response.data.user);
     }
-    return data;
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
+
+  async signUpUser(credentials) {
+    const response = await backendApi.post("/auth/register", credentials, {
+      _skipAutoRefresh: true,
+      _skipAuth: true,
+    });
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
   }
 }

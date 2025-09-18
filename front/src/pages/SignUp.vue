@@ -11,30 +11,36 @@ const router = useRouter();
 const toast = useToast();
 const isSubmitted = ref(false);
 
-const loginData = reactive({
+const signupData = reactive({
   email: "",
+  confirmEmail: "",
   password: "",
+  confirmPassword: "",
 });
 
 const errors = reactive({
   email: "",
+  confirmEmail: "",
   password: "",
+  confirmPassword: "",
 });
 
-async function handleLogin() {
+async function handleSignup() {
   if (isSubmitted.value) return;
   isSubmitted.value = true;
   Object.keys(errors).forEach((key) => (errors[key] = ""));
 
-  if (!validateLogin()) {
+  if (!validateSignup()) {
     isSubmitted.value = false;
     return;
   }
 
   try {
-    const response = await authService.loginUser(loginData);
-    if (response.status === 200) {
-      router.push({ name: "Home" });
+    const response = await authService.signUpUser(signupData);
+
+    if (response.status === 201) {
+      toast.success("User created successfully.");
+      router.push({ name: "Login" });
     }
   } catch (error) {
     handleError(error);
@@ -43,19 +49,43 @@ async function handleLogin() {
   }
 }
 
-function validateLogin() {
+function validateSignup() {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  if (!loginData.email) {
+  if (!signupData.email) {
     errors.email = "Can't be empty";
-  } else if (!emailRegex.test(loginData.email)) {
+  } else if (!emailRegex.test(signupData.email)) {
     errors.email = "Invalid format";
   }
 
-  if (!loginData.password) {
+  if (!signupData.confirmEmail) {
+    errors.confirmEmail = "Can't be empty";
+  } else if (!emailRegex.test(signupData.confirmEmail)) {
+    errors.confirmEmail = "Invalid format";
+  }
+
+  if (!errors.email && !errors.confirmEmail) {
+    if (signupData.email !== signupData.confirmEmail) {
+      errors.confirmEmail = "Emails must match";
+    }
+  }
+
+  if (!signupData.password) {
     errors.password = "Can't be empty";
-  } else if (loginData.password.length < 8) {
+  } else if (signupData.password.length < 8) {
     errors.password = "Must have at least 8 characters";
+  }
+
+  if (!signupData.confirmPassword) {
+    errors.confirmPassword = "Can't be empty";
+  } else if (signupData.confirmPassword.length < 8) {
+    errors.confirmPassword = "Must have at least 8 characters";
+  }
+
+  if (!errors.password && !errors.confirmPassword) {
+    if (signupData.password !== signupData.confirmPassword) {
+      errors.confirmPassword = "Passwords must match";
+    }
   }
 
   return Object.values(errors).every((error) => error === "");
@@ -64,17 +94,23 @@ function validateLogin() {
 function handleError(error) {
   if (error.response) {
     switch (error.response.status) {
-      case 401:
+      case 409:
+        errors.email = " ";
+        errors.confirmEmail = " ";
+        toast.error("Email already in use.");
+        break;
       case 422:
         errors.email = " ";
+        errors.confirmEmail = " ";
         errors.password = " ";
-        toast.error("Please check your email and password and try again.");
+        errors.confirmPassword = " ";
+        toast.error("Please review the form and try again.");
         break;
       case 500:
         toast.error("An error occurred on the server. Please try again later.");
         break;
       default:
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.warning("An unexpected error occurred. Please try again.");
         break;
     }
   } else {
@@ -90,15 +126,19 @@ function clearError(field) {
 </script>
 
 <template>
-  <div class="login-layout">
+  <div class="signup-layout">
     <img src="/assets/logo.svg" alt="Logo" class="logo" />
-    <form id="login-form" @submit.prevent="handleLogin" class="login-container">
-      <h1 class="text-preset-1">Login</h1>
-      <div class="login-inputs">
+    <form
+      id="signup-form"
+      @submit.prevent="handleSignup"
+      class="signup-container"
+    >
+      <h1 class="text-preset-1">Sign Up</h1>
+      <div class="signup-inputs">
         <div class="input-container">
           <input
             name="email"
-            v-model.trim="loginData.email"
+            v-model.trim="signupData.email"
             type="text"
             placeholder="Email address"
             aria-label="Email address"
@@ -112,8 +152,25 @@ function clearError(field) {
         </div>
         <div class="input-container">
           <input
+            name="confirmEmail"
+            v-model.trim="signupData.confirmEmail"
+            type="text"
+            placeholder="Repeat Email address"
+            aria-label="Repeat Email address"
+            class="text-preset-4 input-item"
+            :class="{ error: errors.confirmEmail }"
+            @focus="clearError('confirmEmail')"
+          />
+          <span
+            v-if="errors.confirmEmail"
+            class="text-preset-5 error-message"
+            >{{ errors.confirmEmail }}</span
+          >
+        </div>
+        <div class="input-container">
+          <input
             name="password"
-            v-model.trim="loginData.password"
+            v-model.trim="signupData.password"
             type="password"
             placeholder="Password"
             aria-label="Password"
@@ -125,12 +182,29 @@ function clearError(field) {
             errors.password
           }}</span>
         </div>
+        <div class="input-container">
+          <input
+            name="confirmPassword"
+            v-model.trim="signupData.confirmPassword"
+            type="password"
+            placeholder="Repeat Password"
+            aria-label="Repeat Password"
+            class="text-preset-4 input-item"
+            :class="{ error: errors.confirmPassword }"
+            @focus="clearError('confirmPassword')"
+          />
+          <span
+            v-if="errors.confirmPassword"
+            class="text-preset-5 error-message"
+            >{{ errors.confirmPassword }}</span
+          >
+        </div>
       </div>
-      <div class="login-submits">
-        <SubmitButton>Login to your account</SubmitButton>
+      <div class="signup-submits">
+        <SubmitButton>Create an account</SubmitButton>
         <h4 class="text-preset-4 signup-prompt">
-          Don't have an account?<a @click="router.push({ name: 'Sign Up' })"
-            >Sign Up</a
+          Already have an account?<a @click="router.push({ name: 'Login' })"
+            >Login</a
           >
         </h4>
       </div>
@@ -140,7 +214,7 @@ function clearError(field) {
 </template>
 
 <style scoped>
-.login-layout {
+.signup-layout {
   width: 100dvw;
   height: 100dvh;
   display: flex;
@@ -154,7 +228,7 @@ function clearError(field) {
   height: 1.6rem;
 }
 
-.login-container {
+.signup-container {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -172,8 +246,8 @@ function clearError(field) {
   color: white;
 }
 
-.login-inputs,
-.login-submits {
+.signup-inputs,
+.signup-submits {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -237,11 +311,11 @@ function clearError(field) {
 }
 
 @media (min-width: 768px) {
-  .login-layout {
+  .signup-layout {
     padding: 5rem 1.5rem 0;
   }
 
-  .login-container {
+  .signup-container {
     width: 25rem;
     border-radius: 1.25rem;
     margin-top: 5rem;
