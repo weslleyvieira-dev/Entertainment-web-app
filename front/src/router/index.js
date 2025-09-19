@@ -3,6 +3,7 @@ import { authTokenStore } from "@/stores/authTokenStore";
 
 const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
+const Home = () => import("@/pages/Home.vue");
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +14,7 @@ const router = createRouter({
     {
       path: "/home",
       name: "Home",
+      component: Home,
       meta: { requiresAuth: true },
     },
   ],
