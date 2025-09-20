@@ -28,12 +28,6 @@ export class TokenService {
   }
 
   async generateRefreshToken(userId) {
-    await prisma.refreshToken.deleteMany({
-      where: {
-        userId: userId,
-      },
-    });
-
     const expiresIn = dayjs().add(30, "days").unix();
     const refreshToken = await prisma.refreshToken.create({
       data: {
@@ -69,14 +63,24 @@ export class TokenService {
     return accessToken;
   }
 
-  async revokeRefreshToken(userId) {
-    const result = await prisma.refreshToken.deleteMany({
+  async revokeRefreshToken(token) {
+    await prisma.refreshToken.delete({
+      where: {
+        id: token,
+      },
+    });
+
+    return true;
+  }
+
+  async revokeAllRefreshToken(userId) {
+    await prisma.refreshToken.deleteMany({
       where: {
         userId: userId,
       },
     });
 
-    return result.count;
+    return true;
   }
 
   async generateEmailToken(userId, type) {
@@ -108,13 +112,13 @@ export class TokenService {
   }
 
   async revokeEmailToken(token) {
-    const result = await prisma.emailToken.deleteMany({
+    await prisma.emailToken.delete({
       where: {
         id: token,
       },
     });
 
-    return result.count;
+    return true;
   }
 
   async findEmailTokenById(token) {

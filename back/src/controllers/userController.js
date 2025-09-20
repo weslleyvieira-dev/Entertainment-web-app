@@ -161,8 +161,8 @@ export class UserController {
 
   async logoutUser(req, res) {
     try {
-      const userId = req.userId;
-      await tokenService.revokeRefreshToken(userId);
+      const refreshTokenId = req.cookies?.refreshToken?.trim();
+      await tokenService.revokeRefreshToken(refreshTokenId);
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
@@ -307,7 +307,7 @@ export class UserController {
 
       await userService.updatePassword(userId, passwordHash);
       await tokenService.revokeEmailToken(token);
-      await tokenService.revokeRefreshToken(userId);
+      await tokenService.revokeAllRefreshToken(userId);
 
       const user = await userService.findUserById(userId);
 
@@ -615,7 +615,7 @@ export class UserController {
       }
 
       await tokenService.revokeEmailToken(token);
-      await tokenService.revokeRefreshToken(userId);
+      await tokenService.revokeAllRefreshToken(userId);
       await userService.deleteUser(userId);
 
       res.clearCookie("refreshToken", {
