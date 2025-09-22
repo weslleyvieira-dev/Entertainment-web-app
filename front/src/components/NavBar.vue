@@ -31,6 +31,7 @@ const router = useRouter();
       <img
         src="/assets/icon-nav-bookmark.svg"
         alt="Bookmarks"
+        class="img-bookmarks"
         :class="{ active: route.name === 'Bookmarks' }"
         @click="
           route.name !== 'Bookmarks' && router.push({ name: 'Bookmarks' })
@@ -41,6 +42,7 @@ const router = useRouter();
       src="/assets/icon-nav-profile.svg"
       alt="Profile"
       class="profile-icon"
+      @click="route.name !== 'Profile' && router.push({ name: 'Profile' })"
     />
   </header>
 </template>
@@ -67,6 +69,15 @@ const router = useRouter();
   gap: 1.5rem;
 }
 
+.pages img {
+  width: 1rem;
+  height: 1rem;
+}
+
+.pages .img-bookmarks {
+  width: 0.846rem;
+}
+
 .pages img:hover {
   cursor: pointer;
   filter: brightness(0) saturate(100%) invert(42%) sepia(63%) saturate(3949%)
@@ -77,6 +88,12 @@ const router = useRouter();
 .pages img.active:hover {
   cursor: default;
   filter: brightness(0) invert(1);
+}
+
+.profile-icon:hover {
+  cursor: pointer;
+  border: 1px solid white;
+  border-radius: 50%;
 }
 
 @media (min-width: 768px) {
@@ -94,6 +111,15 @@ const router = useRouter();
 
   .pages {
     gap: 2rem;
+  }
+
+  .pages img {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .pages .img-bookmarks {
+    width: 1.058rem;
   }
 
   .profile-icon {

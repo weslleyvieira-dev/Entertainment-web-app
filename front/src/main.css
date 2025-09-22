@@ -30,6 +30,7 @@ body {
 input {
   font-family: "Outfit", sans-serif;
   outline: none;
+  caret-color: var(--red-500);
 }
 
 :root {

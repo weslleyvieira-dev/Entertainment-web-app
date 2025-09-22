@@ -1,10 +1,12 @@
-<script setup></script>
+<script setup>
+const emit = defineEmits(["click"]);
+</script>
 
 <template>
   <button
     type="submit"
     aria-label="Submit form"
-    @click="$emit('click')"
+    @click="emit('click')"
     class="submit-button"
   >
     <slot></slot>

@@ -1,9 +1,11 @@
 <script setup>
-import Navbar from "@/components/Navbar.vue";
+import NavBar from "@/components/NavBar.vue";
+import SearchBar from "@/components/SearchBar.vue";
 </script>
 
 <template>
-  <Navbar />
+  <NavBar />
+  <SearchBar placeholder="Search for movies or TV series" />
 </template>
 
 <style scoped></style>

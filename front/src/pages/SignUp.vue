@@ -268,7 +268,6 @@ function clearError(field) {
 .input-item:focus,
 .input-item:hover {
   border-bottom: 1px solid white;
-  caret-color: var(--red-500);
 }
 
 .input-item::placeholder {
