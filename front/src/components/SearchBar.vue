@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from "vue";
+import TmdbService from "@/services/tmdbService.js";
 
+const tmdbService = new TmdbService();
 const query = ref("");
 
 const props = defineProps({
@@ -10,8 +12,17 @@ const props = defineProps({
   },
 });
 
-function getResult(search) {
+async function getResult(search) {
   console.log(search);
+}
+
+const DEBOUNCE_MS = 500;
+let debounceId;
+function getResultDebounced(search) {
+  clearTimeout(debounceId);
+  debounceId = setTimeout(() => {
+    getResult(search);
+  }, DEBOUNCE_MS);
 }
 </script>
 
@@ -24,7 +35,7 @@ function getResult(search) {
       v-model.trim="query"
       :placeholder="$props.placeholder"
       :aria-label="$props.placeholder"
-      @keyup="getResult(query)"
+      @keyup="getResultDebounced(query)"
       class="search-input text-preset-2"
     />
   </div>
@@ -35,7 +46,7 @@ function getResult(search) {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 5rem 1rem 1.5rem;
+  padding: 1.5rem 1rem;
   gap: 1rem;
 }
 
@@ -63,7 +74,7 @@ function getResult(search) {
 
 @media (min-width: 768px) {
   .search-box {
-    padding: 8rem 1.5rem 2rem;
+    padding: 2rem 1.5rem;
     gap: 1.5rem;
   }
 
@@ -75,7 +86,7 @@ function getResult(search) {
 
 @media (min-width: 1024px) and (min-height: 512px) {
   .search-box {
-    padding: 4rem 2.25rem 2.5rem 10.25rem;
+    padding: 4rem 2.25rem 2.5rem;
     gap: 2rem;
   }
 }

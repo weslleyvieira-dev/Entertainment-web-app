@@ -49,7 +49,6 @@ const router = useRouter();
 
 <style scoped>
 .navbar {
-  position: fixed;
   width: 100%;
   height: 3.5rem;
   display: flex;
@@ -100,7 +99,7 @@ const router = useRouter();
   .navbar {
     width: calc(100% - 3rem);
     height: 4.5rem;
-    margin: 1.5rem;
+    margin: 1.5rem 1.5rem 0;
     border-radius: 0.625rem;
   }
 

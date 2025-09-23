@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authTokenStore } from "@/stores/authTokenStore";
-
+import MainLayout from "@/layouts/MainLayout.vue";
 const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
 const Home = () => import("@/pages/Home.vue");
@@ -12,10 +12,16 @@ const router = createRouter({
     { path: "/login", name: "Login", component: Login },
     { path: "/sign-up", name: "Sign Up", component: SignUp },
     {
-      path: "/home",
-      name: "Home",
-      component: Home,
+      path: "/",
+      component: MainLayout,
       meta: { requiresAuth: true },
+      children: [
+        {
+          path: "/home",
+          name: "Home",
+          component: Home,
+        },
+      ],
     },
   ],
 });

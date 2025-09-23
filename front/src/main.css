@@ -45,6 +45,11 @@ input {
   );
   --text-light: 300;
   --text-medium: 500;
+  --scrollbar-thumb: rgba(252, 71, 71, 0.5);
+}
+
+* {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .text-preset-1 {

@@ -1,5 +1,5 @@
 import { tmdbApi, imgTrending, imgDefault } from "@/api/tmdbApi";
-
+const YT_EMBED_BASE = "https://www.youtube.com/embed/";
 export default class TmdbService {
   async getTrending(limit = 10, params = {}) {
     const results = [];
@@ -26,6 +26,7 @@ export default class TmdbService {
     } while (results.length < limit);
 
     await this._addClassification(results);
+    await this._addTrailer(results);
 
     return results;
   }
@@ -99,6 +100,41 @@ export default class TmdbService {
       })
     );
     return items;
+  }
+
+  async _addTrailer(items) {
+    await Promise.all(
+      items.map(async (item) => {
+        try {
+          if (item.type === "movie" || item.type === "tv") {
+            item.trailer = await this._getTrailerKey(item.type, item.id);
+          } else {
+            item.trailer = null;
+          }
+        } catch (error) {
+          item.trailer = null;
+        }
+      })
+    );
+    return items;
+  }
+
+  async _getTrailerKey(mediaType, id) {
+    const { data } = await tmdbApi.get(`/${mediaType}/${id}/videos`);
+
+    const videos = Array.isArray(data?.results) ? data.results : [];
+    if (videos.length === 0) return null;
+
+    const isCandidate = (v) =>
+      v?.key &&
+      (v?.type === "Trailer" || v?.type === "Teaser") &&
+      v?.site === "YouTube" &&
+      v?.official === true;
+
+    const bestVideo = videos.find(isCandidate);
+    return bestVideo?.key
+      ? `${YT_EMBED_BASE}${bestVideo.key}?autoplay=1&rel=0`
+      : null;
   }
 
   async _getMovieCertification(id) {
