@@ -1,29 +1,27 @@
 <script setup>
-import { ref } from "vue";
-import TmdbService from "@/services/tmdbService.js";
-
-const tmdbService = new TmdbService();
-const query = ref("");
+import { computed, watch, onBeforeUnmount } from "vue";
 
 const props = defineProps({
-  placeholder: {
-    type: String,
-    default: "Search",
-  },
+  modelValue: { type: String, default: "" },
+  placeholder: { type: String, default: "Search" },
 });
 
-async function getResult(search) {
-  console.log(search);
-}
+const emit = defineEmits(["update:modelValue", "search"]);
+let timer;
 
-const DEBOUNCE_MS = 500;
-let debounceId;
-function getResultDebounced(search) {
-  clearTimeout(debounceId);
-  debounceId = setTimeout(() => {
-    getResult(search);
-  }, DEBOUNCE_MS);
-}
+const query = computed({
+  get: () => props.modelValue,
+  set: (v) => emit("update:modelValue", v),
+});
+
+watch(query, (value) => {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    emit("search", value);
+  }, 500);
+});
+
+onBeforeUnmount(() => clearTimeout(timer));
 </script>
 
 <template>
@@ -33,9 +31,8 @@ function getResultDebounced(search) {
       id="query"
       type="text"
       v-model.trim="query"
-      :placeholder="$props.placeholder"
-      :aria-label="$props.placeholder"
-      @keyup="getResultDebounced(query)"
+      :placeholder="placeholder"
+      :aria-label="placeholder"
       class="search-input text-preset-2"
     />
   </div>

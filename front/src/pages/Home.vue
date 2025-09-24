@@ -2,14 +2,19 @@
 import { ref, onBeforeMount } from "vue";
 import { useToast } from "vue-toastification";
 import TmdbService from "@/services/tmdbService.js";
-import SearchBar from "@/components/SearchBar.vue";
+import SearchLayout from "@/layouts/SearchLayout.vue";
 import ThumbTrending from "@/components/ThumbTrending.vue";
 import Loading from "@/components/Loading.vue";
 
 const toast = useToast();
 const tmdbService = new TmdbService();
 const isLoading = ref(true);
-let trendingItems = ref([]);
+const trendingItems = ref([]);
+const hasResults = ref(false);
+
+function onResults(list) {
+  hasResults.value = Array.isArray(list) && list.length > 0;
+}
 
 async function getTrending() {
   try {
@@ -31,15 +36,20 @@ onBeforeMount(getTrending);
 <template>
   <Loading v-if="isLoading" />
   <template v-else>
-    <SearchBar placeholder="Search for movies or TV series" />
-    <div class="trending-conteiner">
-      <h1 class="trending-title text-preset-1">Trending</h1>
-      <ul class="trending-items">
-        <li v-for="item in trendingItems" :key="item.id">
-          <ThumbTrending :item="item" />
-        </li>
-      </ul>
-    </div>
+    <SearchLayout
+      :searchFn="(q) => tmdbService.searchMulti(q)"
+      placeholder="Search for movies or TV series"
+      @results="onResults"
+    >
+      <div v-if="!hasResults" class="trending-conteiner">
+        <h1 class="trending-title text-preset-1">Trending</h1>
+        <ul class="trending-items">
+          <li v-for="item in trendingItems" :key="item.id">
+            <ThumbTrending :item="item" />
+          </li>
+        </ul>
+      </div>
+    </SearchLayout>
   </template>
 </template>
 

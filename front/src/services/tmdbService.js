@@ -14,7 +14,9 @@ export default class TmdbService {
       if ((data?.results ?? []).length === 0) break;
 
       const filtered = (data.results || []).filter(
-        (item) => item.media_type === "movie" || item.media_type === "tv"
+        (item) =>
+          (item.media_type === "movie" || item.media_type === "tv") &&
+          Number(item?.popularity) >= 1
       );
 
       for (const item of filtered) {
@@ -24,6 +26,40 @@ export default class TmdbService {
 
       page += 1;
     } while (results.length < limit);
+
+    await this._addClassification(results);
+    await this._addTrailer(results);
+
+    return results;
+  }
+
+  async searchMulti(query, page = 1, params = {}) {
+    const results = [];
+    let currentPage = page;
+
+    do {
+      const { data } = await tmdbApi.get("/search/multi", {
+        params: {
+          query,
+          page: currentPage,
+          ...params,
+        },
+      });
+
+      if ((data?.results ?? []).length === 0) break;
+
+      const filtered = (data.results || []).filter(
+        (item) =>
+          (item.media_type === "movie" || item.media_type === "tv") &&
+          Number(item?.popularity) >= 1
+      );
+
+      for (const item of filtered) {
+        results.push(this._mapItem(item));
+      }
+
+      currentPage += 1;
+    } while (results.lenght < 20);
 
     await this._addClassification(results);
     await this._addTrailer(results);
