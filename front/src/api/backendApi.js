@@ -2,8 +2,8 @@ import axios from "axios";
 import { authTokenStore } from "@/stores/authTokenStore";
 
 const baseURL = import.meta.env.DEV
-  ? import.meta.env.VITE_APP_API_URL_DEV
-  : import.meta.env.VITE_APP_API_URL_PROD;
+  ? "http://localhost:3000"
+  : "https://entertainment-web-app-back-wellsz.vercel.app";
 
 export const backendApi = axios.create({
   baseURL,

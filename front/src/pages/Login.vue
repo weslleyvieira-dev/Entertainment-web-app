@@ -74,7 +74,7 @@ function handleError(error) {
         toast.error("An error occurred on the server. Please try again later.");
         break;
       default:
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error("An unexpected error occurred. Please try again later.");
         break;
     }
   } else {

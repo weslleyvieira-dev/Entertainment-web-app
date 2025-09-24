@@ -1,8 +1,9 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_APP_TMDB_URL;
-const baseImageURL = import.meta.env.VITE_APP_TMDB_IMG_URL;
-const apiToken = import.meta.env.VITE_APP_TMDB_TOKEN;
+const baseURL = import.meta.env.DEV
+  ? "http://localhost:3000/tmdb"
+  : "https://entertainment-web-app-back-wellsz.vercel.app/tmdb";
+const baseImageURL = "https://image.tmdb.org/t/p";
 
 export const tmdbImageUrl = (path, size) =>
   path ? `${baseImageURL}/${size}${path}` : "";
@@ -10,10 +11,9 @@ export const imgTrending = (path) => tmdbImageUrl(path, "w1280");
 export const imgDefault = (path) => tmdbImageUrl(path, "w780");
 
 export const tmdbApi = axios.create({
-  baseURL,
+  baseURL: baseURL,
   headers: {
     accept: "application/json",
-    Authorization: `Bearer ${apiToken}`,
   },
 });
 
