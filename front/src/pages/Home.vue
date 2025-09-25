@@ -11,6 +11,7 @@ const tmdbService = new TmdbService();
 const isLoading = ref(true);
 const trendingItems = ref([]);
 const inTheatres = ref([]);
+const onTheAir = ref([]);
 const hasResults = ref(false);
 
 function onResults(list) {
@@ -21,7 +22,8 @@ async function fetchData() {
   isLoading.value = true;
   try {
     trendingItems.value = await tmdbService.getTrending();
-    inTheatres.value = await tmdbService.getInTheatres();
+    inTheatres.value = await tmdbService.getCurrentlyList("movie");
+    onTheAir.value = await tmdbService.getCurrentlyList("tv");
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +
@@ -52,10 +54,18 @@ onBeforeMount(fetchData);
           </li>
         </ul>
       </div>
-      <div v-if="!hasResults" class="theatres-container">
-        <h1 class="theatres-title text-preset-1">Now Playing</h1>
-        <ul class="theatres-items">
+      <div v-if="!hasResults" class="currently-container">
+        <h1 class="currently-title text-preset-1">Now Playing</h1>
+        <ul class="currently-items">
           <li v-for="item in inTheatres" :key="item.id">
+            <ThumbTrending :item="item" />
+          </li>
+        </ul>
+      </div>
+      <div v-if="!hasResults" class="currently-container">
+        <h1 class="currently-title text-preset-1">On the Air</h1>
+        <ul class="currently-items">
+          <li v-for="item in onTheAir" :key="item.id">
             <ThumbTrending :item="item" />
           </li>
         </ul>
@@ -66,7 +76,7 @@ onBeforeMount(fetchData);
 
 <style scoped>
 .trending-container,
-.theatres-container {
+.currently-container {
   display: flex;
   flex-direction: column;
   padding-left: 1rem;
@@ -74,20 +84,21 @@ onBeforeMount(fetchData);
 }
 
 .trending-title,
-.theatres-title {
+.currently-title {
   color: white;
 }
 
 .trending-items,
-.theatres-items {
+.currently-items {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   overflow-x: auto;
   list-style: none;
+  padding-bottom: 0.5rem;
 }
 
-.theatres-items {
+.currently-items {
   display: flex;
 }
 </style>

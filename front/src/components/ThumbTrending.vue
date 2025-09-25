@@ -176,7 +176,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.75) 100%
+    rgba(0, 0, 0, 0.85) 100%
   );
   z-index: 2;
 }
@@ -215,7 +215,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 }
 
 .thumb-title {
+  width: 100%;
   color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .modal-overlay {

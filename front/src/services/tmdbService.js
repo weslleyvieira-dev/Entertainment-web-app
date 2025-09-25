@@ -32,18 +32,25 @@ export default class TmdbService {
     return results;
   }
 
-  async getInTheatres(limit = 10, params = {}) {
+  async getCurrentlyList(type, limit = 10, params = {}) {
     const results = [];
     let page = 1;
+    let path;
 
-    const { data } = await tmdbApi.get(`/movie/now_playing`, {
+    if (type === "movie") {
+      path = "/movie/now_playing";
+    } else if (type === "tv") {
+      path = "/tv/on_the_air";
+    } else return;
+
+    const { data } = await tmdbApi.get(`${path}`, {
       params: { page, ...params },
     });
 
     if ((data?.results ?? []).length === 0) return;
 
     for (const item of data.results) {
-      results.push(this._mapItem({ ...item, media_type: "movie" }));
+      results.push(this._mapItem({ ...item, media_type: type }));
       if (results.length >= limit) break;
     }
 
