@@ -10,7 +10,9 @@ const props = defineProps({
 const item = props.item;
 
 const fallbackImg = "/assets/image-not-found.png";
-const imgSrc = computed(() => item.imgTrending || fallbackImg);
+const imgSrc = computed(
+  () => item.imgTrending || item.imgDefault || fallbackImg
+);
 
 const categoryIcon = computed(() =>
   item.type === "tv"
@@ -90,7 +92,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
             :src="item.trailer"
             title="YouTube video player"
             frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;"
             referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
           ></iframe>

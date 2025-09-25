@@ -10,19 +10,22 @@ const toast = useToast();
 const tmdbService = new TmdbService();
 const isLoading = ref(true);
 const trendingItems = ref([]);
+const inTheatres = ref([]);
 const hasResults = ref(false);
 
 function onResults(list) {
   hasResults.value = Array.isArray(list) && list.length > 0;
 }
 
-async function getTrending() {
+async function fetchData() {
+  isLoading.value = true;
   try {
     trendingItems.value = await tmdbService.getTrending();
+    inTheatres.value = await tmdbService.getInTheatres();
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +
-        error.message
+        (error?.message || error)
     );
     trendingItems.value = [];
   } finally {
@@ -30,7 +33,7 @@ async function getTrending() {
   }
 }
 
-onBeforeMount(getTrending);
+onBeforeMount(fetchData);
 </script>
 
 <template>
@@ -41,10 +44,18 @@ onBeforeMount(getTrending);
       placeholder="Search for movies or TV series"
       @results="onResults"
     >
-      <div v-if="!hasResults" class="trending-conteiner">
+      <div v-if="!hasResults" class="trending-container">
         <h1 class="trending-title text-preset-1">Trending</h1>
         <ul class="trending-items">
           <li v-for="item in trendingItems" :key="item.id">
+            <ThumbTrending :item="item" />
+          </li>
+        </ul>
+      </div>
+      <div v-if="!hasResults" class="theatres-container">
+        <h1 class="theatres-title text-preset-1">Now Playing</h1>
+        <ul class="theatres-items">
+          <li v-for="item in inTheatres" :key="item.id">
             <ThumbTrending :item="item" />
           </li>
         </ul>
@@ -54,21 +65,29 @@ onBeforeMount(getTrending);
 </template>
 
 <style scoped>
-.trending-conteiner {
+.trending-container,
+.theatres-container {
   display: flex;
   flex-direction: column;
   padding-left: 1rem;
   gap: 1rem;
 }
 
-.trending-title {
+.trending-title,
+.theatres-title {
   color: white;
 }
 
-.trending-items {
-  display: flex;
+.trending-items,
+.theatres-items {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
   overflow-x: auto;
   list-style: none;
+}
+
+.theatres-items {
+  display: flex;
 }
 </style>

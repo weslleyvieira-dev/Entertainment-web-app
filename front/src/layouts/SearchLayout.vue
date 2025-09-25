@@ -56,7 +56,7 @@ async function onSearch(value) {
     <Loading />
   </div>
 
-  <div v-if="resultsQuery" class="results-conteiner">
+  <div v-if="resultsQuery" class="results-container">
     <h1 class="results-title text-preset-1">
       {{ titleFormatter(results.length, resultsQuery) }}
     </h1>
@@ -67,13 +67,13 @@ async function onSearch(value) {
     </ul>
   </div>
 
-  <div v-else-if="!isSearching">
+  <div class="main-layout" v-else-if="!isSearching">
     <slot />
   </div>
 </template>
 
 <style scoped>
-.results-conteiner {
+.results-container {
   display: flex;
   flex-direction: column;
   padding: 0 1rem;
@@ -98,8 +98,14 @@ async function onSearch(value) {
   justify-content: center;
 }
 
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 @media (min-width: 768px) {
-  .results-conteiner {
+  .results-container {
     gap: 1.5rem;
   }
 
@@ -110,7 +116,7 @@ async function onSearch(value) {
 }
 
 @media (min-width: 1024px) and (min-height: 512px) {
-  .results-conteiner {
+  .results-container {
     gap: 2rem;
   }
 

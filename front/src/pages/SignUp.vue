@@ -263,6 +263,8 @@ function clearError(field) {
   border: none;
   border-bottom: 1px solid var(--blue-500);
   background: transparent;
+  -webkit-text-fill-color: white !important;
+  box-shadow: 0 0 0px 1000px var(--blue-900) inset !important;
 }
 
 .input-item:focus,

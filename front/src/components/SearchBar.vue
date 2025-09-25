@@ -22,7 +22,7 @@ watch(query, (value) => {
   } else {
     timer = setTimeout(() => {
       emit("search", value);
-    }, 500);
+    }, 1000);
   }
 });
 

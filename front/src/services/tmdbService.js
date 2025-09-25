@@ -1,13 +1,12 @@
 import { tmdbApi, imgTrending, imgDefault } from "@/api/tmdbApi";
 const YT_EMBED_BASE = "https://www.youtube.com/embed/";
 export default class TmdbService {
-  async getTrending(limit = 10, params = {}) {
+  async getTrending(time = "week", limit = 10, params = {}) {
     const results = [];
-    const startPage = 1;
-    let page = startPage;
+    let page = 1;
 
     do {
-      const { data } = await tmdbApi.get(`/trending/all/week`, {
+      const { data } = await tmdbApi.get(`/trending/all/${time}`, {
         params: { page, ...params },
       });
 
@@ -26,6 +25,27 @@ export default class TmdbService {
 
       page += 1;
     } while (results.length < limit);
+
+    await this._addClassification(results);
+    await this._addTrailer(results);
+
+    return results;
+  }
+
+  async getInTheatres(limit = 10, params = {}) {
+    const results = [];
+    let page = 1;
+
+    const { data } = await tmdbApi.get(`/movie/now_playing`, {
+      params: { page, ...params },
+    });
+
+    if ((data?.results ?? []).length === 0) return;
+
+    for (const item of data.results) {
+      results.push(this._mapItem({ ...item, media_type: "movie" }));
+      if (results.length >= limit) break;
+    }
 
     await this._addClassification(results);
     await this._addTrailer(results);
@@ -66,29 +86,6 @@ export default class TmdbService {
     return results;
   }
 
-  async getImages(mediaType, id, params = {}) {
-    const { data } = await tmdbApi.get(`/${mediaType}/${id}/images`, {
-      params: { ...params },
-    });
-    return {
-      ...data,
-      backdrops: (data.backdrops || []).map((i) =>
-        this._withImages(i, i.file_path)
-      ),
-      posters: (data.posters || []).map((i) =>
-        this._withImages(i, i.file_path)
-      ),
-    };
-  }
-
-  _mapResults(data) {
-    if (!data) return data;
-    if (Array.isArray(data.results)) {
-      return { ...data, results: data.results.map((i) => this._mapItem(i)) };
-    }
-    return this._mapItem(data);
-  }
-
   _mapItem(item) {
     const path = item?.backdrop_path || item?.poster_path || "";
     const title =
@@ -108,14 +105,6 @@ export default class TmdbService {
       release_date: year,
       title,
       popularity: item?.popularity,
-    };
-  }
-
-  _withImages(item, path) {
-    return {
-      ...item,
-      imgTrending: path ? imgTrending(path) : "",
-      imgDefault: path ? imgDefault(path) : "",
     };
   }
 
@@ -155,19 +144,29 @@ export default class TmdbService {
     return items;
   }
 
-  async _getTrailerKey(mediaType, id) {
-    const { data } = await tmdbApi.get(`/${mediaType}/${id}/videos`);
-
+  async _getTrailerKey(type, id) {
+    const { data } = await tmdbApi.get(`/${type}/${id}/videos`);
     const videos = Array.isArray(data?.results) ? data.results : [];
     if (videos.length === 0) return null;
 
-    const isCandidate = (v) =>
-      v?.key &&
-      (v?.type === "Trailer" || v?.type === "Teaser") &&
-      v?.site === "YouTube" &&
-      v?.official === true;
+    const priority = { Trailer: 1, Teaser: 2, Clip: 3 };
 
-    const bestVideo = videos.find(isCandidate);
+    const candidates = videos
+      .filter(
+        (v) =>
+          v?.key &&
+          (v?.type === "Trailer" ||
+            v?.type === "Teaser" ||
+            v?.type === "Clip") &&
+          v?.site === "YouTube"
+      )
+      .sort((a, b) => {
+        if (a.official && !b.official) return -1;
+        if (!a.official && b.official) return 1;
+        return priority[a.type] - priority[b.type];
+      });
+
+    const bestVideo = candidates[0];
     return bestVideo?.key
       ? `${YT_EMBED_BASE}${bestVideo.key}?autoplay=1&rel=0`
       : null;
