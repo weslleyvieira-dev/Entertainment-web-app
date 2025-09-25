@@ -45,7 +45,6 @@ export default class TmdbService {
           ...params,
         },
       });
-
       if ((data?.results ?? []).length === 0) break;
 
       const filtered = (data.results || []).filter(
@@ -53,17 +52,17 @@ export default class TmdbService {
           (item.media_type === "movie" || item.media_type === "tv") &&
           Number(item?.popularity) >= 1
       );
-
       for (const item of filtered) {
         results.push(this._mapItem(item));
       }
 
       currentPage += 1;
-    } while (results.lenght < 20);
+    } while (currentPage <= 3);
 
     await this._addClassification(results);
     await this._addTrailer(results);
 
+    results.sort((a, b) => b.popularity - a.popularity);
     return results;
   }
 
@@ -108,6 +107,7 @@ export default class TmdbService {
       type: item?.media_type,
       release_date: year,
       title,
+      popularity: item?.popularity,
     };
   }
 

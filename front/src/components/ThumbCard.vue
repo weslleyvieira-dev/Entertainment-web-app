@@ -49,7 +49,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
         @click.prevent="openTrailer"
       >
         <img src="/assets/icon-play.svg" alt="Play Trailer" class="trailer" />
-        Play
+        <span class="play-text"> Play </span>
       </button>
     </div>
     <img :src="imgSrc" :alt="item.title" class="thumb-img" />
@@ -106,7 +106,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 <style scoped>
 .thumb-container {
-  width: 10.25rem;
+  width: 100%;
   height: 9.875rem;
   border-radius: 0.5rem;
   overflow: hidden;
@@ -118,20 +118,25 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   display: flex;
   align-items: center;
   justify-content: center;
-  inset: 0;
+  width: 100%;
+  height: 6.875rem;
   opacity: 0;
   transition: opacity 300ms ease-in;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 3;
 }
 
+.trailer-container .play-text {
+  display: none;
+}
+
 .trailer-container .trailer-link {
-  width: 7.313rem;
-  height: 3rem;
+  width: 3.5rem;
+  height: 3.5rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
-  padding-left: 0.625rem;
   border-radius: 1.781rem;
   text-decoration: none;
   border: none;
@@ -270,12 +275,28 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 @media (min-width: 768px) {
   .thumb-container {
-    width: 13.75rem;
     height: 12.188rem;
   }
 
-  .thumb-img {
+  .thumb-img,
+  .trailer-container {
     height: 8.75rem;
+  }
+
+  .trailer-container .play-text {
+    display: inline;
+  }
+
+  .trailer-container .trailer-link {
+    width: 7.313rem;
+    height: 3rem;
+    justify-content: unset;
+    gap: 1.125rem;
+    padding: 0 0.75rem;
+  }
+
+  .trailer-container .text-preset-4 {
+    font-size: 1rem;
   }
 
   .thumb-infos .text-preset-6 {
@@ -308,12 +329,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
 @media (min-width: 1024px) and (min-height: 512px) {
   .thumb-container {
-    width: 17.5rem;
     height: 14.313rem;
   }
 
-  .thumb-img {
+  .thumb-img,
+  .trailer-container {
     height: 10.875rem;
+  }
+
+  .trailer-container .text-preset-4 {
+    font-size: 1.125rem;
   }
 
   .modal-content {

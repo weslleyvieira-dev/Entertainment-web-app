@@ -16,9 +16,14 @@ const query = computed({
 
 watch(query, (value) => {
   clearTimeout(timer);
-  timer = setTimeout(() => {
+
+  if (value === "") {
     emit("search", value);
-  }, 500);
+  } else {
+    timer = setTimeout(() => {
+      emit("search", value);
+    }, 500);
+  }
 });
 
 onBeforeUnmount(() => clearTimeout(timer));
@@ -33,6 +38,7 @@ onBeforeUnmount(() => clearTimeout(timer));
       v-model.trim="query"
       :placeholder="placeholder"
       :aria-label="placeholder"
+      autocomplete="off"
       class="search-input text-preset-2"
     />
   </div>
@@ -43,7 +49,7 @@ onBeforeUnmount(() => clearTimeout(timer));
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 1.5rem 1rem;
+  padding: 0 1rem 1.5rem;
   gap: 1rem;
 }
 
@@ -71,7 +77,7 @@ onBeforeUnmount(() => clearTimeout(timer));
 
 @media (min-width: 768px) {
   .search-box {
-    padding: 2rem 1.5rem;
+    padding: 0 1.5rem 2rem;
     gap: 1.5rem;
   }
 
@@ -83,7 +89,7 @@ onBeforeUnmount(() => clearTimeout(timer));
 
 @media (min-width: 1024px) and (min-height: 512px) {
   .search-box {
-    padding: 4rem 2.25rem 2.5rem;
+    padding: 0 2.25rem 2.5rem;
     gap: 2rem;
   }
 }

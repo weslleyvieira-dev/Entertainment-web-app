@@ -49,7 +49,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
         @click.prevent="openTrailer"
       >
         <img src="/assets/icon-play.svg" alt="Play Trailer" class="trailer" />
-        Play
+        <span class="play-text"> Play </span>
       </button>
     </div>
     <img :src="imgSrc" :alt="item.title" class="thumb-img" />
@@ -121,13 +121,17 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   z-index: 3;
 }
 
+.trailer-container .play-text {
+  display: none;
+}
+
 .trailer-container .trailer-link {
-  width: 7.313rem;
-  height: 3rem;
+  width: 3.5rem;
+  height: 3.5rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
-  padding-left: 0.625rem;
   border-radius: 1.781rem;
   text-decoration: none;
   border: none;
@@ -265,6 +269,18 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
   .thumb-container {
     width: 29.375rem;
     height: 14.375rem;
+  }
+
+  .trailer-container .play-text {
+    display: inline;
+  }
+
+  .trailer-container .trailer-link {
+    width: 7.313rem;
+    height: 3rem;
+    justify-content: unset;
+    gap: 1.125rem;
+    padding: 0 0.75rem;
   }
 
   .thumb-details {

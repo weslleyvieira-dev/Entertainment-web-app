@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useToast } from "vue-toastification";
 import SearchBar from "@/components/SearchBar.vue";
 import ThumbCard from "@/components/ThumbCard.vue";
+import Loading from "@/components/Loading.vue";
 
 const props = defineProps({
   placeholder: { type: String, default: "Search" },
@@ -51,6 +52,9 @@ async function onSearch(value) {
 
 <template>
   <SearchBar v-model="query" :placeholder="placeholder" @search="onSearch" />
+  <div v-if="isSearching">
+    <Loading />
+  </div>
 
   <div v-if="resultsQuery" class="results-conteiner">
     <h1 class="results-title text-preset-1">
@@ -63,7 +67,7 @@ async function onSearch(value) {
     </ul>
   </div>
 
-  <div v-else>
+  <div v-else-if="!isSearching">
     <slot />
   </div>
 </template>
@@ -83,10 +87,15 @@ async function onSearch(value) {
 .results-items {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10.25rem, 1fr));
-  gap: 1rem 0.938rem;
-  justify-items: center;
+  gap: 1.5rem 0.75rem;
   overflow-x: auto;
   list-style: none;
+}
+
+.results-items > li {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 @media (min-width: 768px) {
@@ -96,7 +105,7 @@ async function onSearch(value) {
 
   .results-items {
     grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
-    gap: 1.5rem 1.875rem;
+    gap: 2rem 1rem;
   }
 }
 
@@ -107,7 +116,6 @@ async function onSearch(value) {
 
   .results-items {
     grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
-    gap: 1.5rem 2.5rem;
   }
 }
 </style>

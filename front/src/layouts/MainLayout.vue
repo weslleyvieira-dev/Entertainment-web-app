@@ -24,8 +24,15 @@ import NavBar from "@/components/NavBar.vue";
   flex: 1;
   min-width: 0;
   min-height: 0;
+  padding: 1.5rem 0;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .app-content {
+    padding: 2rem 0;
+  }
 }
 
 @media (min-width: 1024px) and (min-height: 512px) {
@@ -35,6 +42,7 @@ import NavBar from "@/components/NavBar.vue";
 
   .app-content {
     align-items: flex-start;
+    padding: 4rem 0;
   }
 }
 </style>
