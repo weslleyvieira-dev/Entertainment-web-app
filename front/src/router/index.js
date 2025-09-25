@@ -5,6 +5,7 @@ const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
 const Home = () => import("@/pages/Home.vue");
 const Movies = () => import("@/pages/Movies.vue");
+const TVSeries = () => import("@/pages/TVSeries.vue");
 
 const router = createRouter({
   history: createWebHistory(),
@@ -26,6 +27,11 @@ const router = createRouter({
           path: "/movies",
           name: "Movies",
           component: Movies,
+        },
+        {
+          path: "/tv-series",
+          name: "TV Series",
+          component: TVSeries,
         },
       ],
     },
