@@ -1,26 +1,37 @@
 import { tmdbApi, imgTrending, imgDefault } from "@/api/tmdbApi";
 const YT_EMBED_BASE = "https://www.youtube.com/embed/";
 export default class TmdbService {
-  async getTrending(time = "week", limit = 10, params = {}) {
+  async getTrending(type = "all", time = "week", limit = 10, params = {}) {
     const results = [];
     let page = 1;
 
     do {
-      const { data } = await tmdbApi.get(`/trending/all/${time}`, {
+      const { data } = await tmdbApi.get(`/trending/${type}/${time}`, {
         params: { page, ...params },
       });
 
       if ((data?.results ?? []).length === 0) break;
 
-      const filtered = (data.results || []).filter(
-        (item) =>
-          (item.media_type === "movie" || item.media_type === "tv") &&
-          Number(item?.popularity) >= 1
-      );
+      let filtered;
+      if (type === "multi") {
+        filtered = (data.results || []).filter(
+          (item) =>
+            (item.media_type === "movie" || item.media_type === "tv") &&
+            Number(item?.popularity) >= 1
+        );
 
-      for (const item of filtered) {
-        results.push(this._mapItem(item));
-        if (results.length >= limit) break;
+        for (const item of filtered) {
+          results.push(this._mapItem(item));
+          if (results.length >= limit) break;
+        }
+      } else {
+        filtered = (data.results || []).filter(
+          (item) => Number(item?.popularity) >= 1
+        );
+        for (const item of filtered) {
+          results.push(this._mapItem({ ...item, media_type: type }));
+          if (results.length >= limit) break;
+        }
       }
 
       page += 1;
@@ -60,12 +71,33 @@ export default class TmdbService {
     return results;
   }
 
-  async searchMulti(query, page = 1, params = {}) {
+  async getPopular(type, page = 1, params = {}) {
+    const results = [];
+
+    const { data } = await tmdbApi.get(`/discover/${type}`, {
+      params: {
+        page: page,
+        ...params,
+      },
+    });
+    if ((data?.results ?? []).length === 0) return;
+
+    for (const item of data.results) {
+      results.push(this._mapItem({ ...item, media_type: type }));
+    }
+
+    await this._addClassification(results);
+    await this._addTrailer(results);
+
+    return results;
+  }
+
+  async search(query, type = "multi", page = 1, params = {}) {
     const results = [];
     let currentPage = page;
 
     do {
-      const { data } = await tmdbApi.get("/search/multi", {
+      const { data } = await tmdbApi.get(`/search/${type}`, {
         params: {
           query,
           page: currentPage,
@@ -74,13 +106,24 @@ export default class TmdbService {
       });
       if ((data?.results ?? []).length === 0) break;
 
-      const filtered = (data.results || []).filter(
-        (item) =>
-          (item.media_type === "movie" || item.media_type === "tv") &&
-          Number(item?.popularity) >= 1
-      );
-      for (const item of filtered) {
-        results.push(this._mapItem(item));
+      let filtered;
+      if (type === "multi") {
+        filtered = (data.results || []).filter(
+          (item) =>
+            (item.media_type === "movie" || item.media_type === "tv") &&
+            Number(item?.popularity) >= 1
+        );
+
+        for (const item of filtered) {
+          results.push(this._mapItem(item));
+        }
+      } else {
+        filtered = (data.results || []).filter(
+          (item) => Number(item?.popularity) >= 1
+        );
+        for (const item of filtered) {
+          results.push(this._mapItem({ ...item, media_type: type }));
+        }
       }
 
       currentPage += 1;

@@ -4,6 +4,7 @@ import MainLayout from "@/layouts/MainLayout.vue";
 const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
 const Home = () => import("@/pages/Home.vue");
+const Movies = () => import("@/pages/Movies.vue");
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,6 +21,11 @@ const router = createRouter({
           path: "/home",
           name: "Home",
           component: Home,
+        },
+        {
+          path: "/movies",
+          name: "Movies",
+          component: Movies,
         },
       ],
     },

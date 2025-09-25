@@ -4,6 +4,7 @@ import { useToast } from "vue-toastification";
 import TmdbService from "@/services/tmdbService.js";
 import SearchLayout from "@/layouts/SearchLayout.vue";
 import ThumbTrending from "@/components/ThumbTrending.vue";
+import ThumbCard from "@/components/ThumbCard.vue";
 import Loading from "@/components/Loading.vue";
 
 const toast = useToast();
@@ -11,7 +12,7 @@ const tmdbService = new TmdbService();
 const isLoading = ref(true);
 const trendingItems = ref([]);
 const inTheatres = ref([]);
-const onTheAir = ref([]);
+const recommended = ref([]);
 const hasResults = ref(false);
 
 function onResults(list) {
@@ -21,9 +22,9 @@ function onResults(list) {
 async function fetchData() {
   isLoading.value = true;
   try {
-    trendingItems.value = await tmdbService.getTrending();
+    trendingItems.value = await tmdbService.getTrending("movie");
     inTheatres.value = await tmdbService.getCurrentlyList("movie");
-    onTheAir.value = await tmdbService.getCurrentlyList("tv");
+    recommended.value = await tmdbService.getPopular("movie");
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +
@@ -42,12 +43,12 @@ onBeforeMount(fetchData);
   <Loading v-if="isLoading" />
   <template v-else>
     <SearchLayout
-      :searchFn="(query) => tmdbService.search(query)"
-      placeholder="Search for movies or TV series"
+      :searchFn="(query) => tmdbService.search(query, 'movie')"
+      placeholder="Search for movies"
       @results="onResults"
     >
       <div v-if="!hasResults" class="trending-container">
-        <h1 class="trending-title text-preset-1">Trending</h1>
+        <h1 class="trending-title text-preset-1">Trending Movies</h1>
         <ul class="trending-items">
           <li v-for="item in trendingItems" :key="item.id">
             <ThumbTrending :item="item" />
@@ -62,11 +63,11 @@ onBeforeMount(fetchData);
           </li>
         </ul>
       </div>
-      <div v-if="!hasResults" class="currently-container">
-        <h1 class="currently-title text-preset-1">On the Air</h1>
-        <ul class="currently-items">
-          <li v-for="item in onTheAir" :key="item.id">
-            <ThumbTrending :item="item" />
+      <div v-if="!hasResults" class="recommended-container">
+        <h1 class="recommended-title text-preset-1">Recommended for you</h1>
+        <ul class="recommended-items">
+          <li v-for="item in recommended" :key="item.id">
+            <ThumbCard :item="item" />
           </li>
         </ul>
       </div>
@@ -76,29 +77,61 @@ onBeforeMount(fetchData);
 
 <style scoped>
 .trending-container,
-.currently-container {
+.currently-container,
+.recommended-container {
   display: flex;
   flex-direction: column;
   padding-left: 1rem;
   gap: 1rem;
 }
 
+.recommended-container {
+  padding: 0 1rem;
+}
+
 .trending-title,
-.currently-title {
+.currently-title,
+.recommended-title {
   color: white;
 }
 
 .trending-items,
-.currently-items {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+.currently-items,
+.recommended-items {
+  display: flex;
   gap: 1rem;
   overflow-x: auto;
   list-style: none;
   padding-bottom: 0.5rem;
 }
 
+.recommended-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.25rem, 1fr));
+  gap: 1.5rem 0.75rem;
+  padding-bottom: 0;
+}
+
+.recommended-items > li {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .currently-items {
   display: flex;
+}
+
+@media (min-width: 768px) {
+  .recommended-items {
+    grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
+    gap: 2rem 1rem;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 512px) {
+  .recommended-items {
+    grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  }
 }
 </style>

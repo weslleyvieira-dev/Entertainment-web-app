@@ -113,6 +113,10 @@ async function onSearch(value) {
     grid-template-columns: repeat(auto-fit, minmax(13.75rem, 1fr));
     gap: 2rem 1rem;
   }
+
+  .main-layout {
+    gap: 2rem;
+  }
 }
 
 @media (min-width: 1024px) and (min-height: 512px) {
