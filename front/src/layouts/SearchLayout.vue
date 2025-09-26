@@ -60,7 +60,13 @@ async function onSearch(value) {
     <h1 class="results-title text-preset-1">
       {{ titleFormatter(results.length, resultsQuery) }}
     </h1>
-    <ul class="results-items">
+    <ul
+      class="results-items"
+      :class="{
+        'tablet-row': results.length <= 2,
+        'desktop-row': results.length <= 3,
+      }"
+    >
       <li v-for="item in results" :key="item.id">
         <ThumbCard :item="item" />
       </li>
@@ -93,7 +99,6 @@ async function onSearch(value) {
 }
 
 .results-items > li {
-  width: 100%;
   display: flex;
   justify-content: center;
 }
@@ -114,6 +119,14 @@ async function onSearch(value) {
     gap: 2rem 1rem;
   }
 
+  .tablet-row {
+    grid-template-columns: repeat(auto-fit, 13.75rem);
+  }
+
+  .tablet-row > li {
+    justify-content: flex-start;
+  }
+
   .main-layout {
     gap: 2rem;
   }
@@ -126,6 +139,14 @@ async function onSearch(value) {
 
   .results-items {
     grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  }
+
+  .desktop-row {
+    grid-template-columns: repeat(auto-fit, 17.5rem);
+  }
+
+  .desktop-row > li {
+    justify-content: flex-start;
   }
 }
 </style>
