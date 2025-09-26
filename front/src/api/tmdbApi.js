@@ -2,7 +2,7 @@ import axios from "axios";
 
 const baseURL = import.meta.env.DEV
   ? "http://localhost:3000/tmdb"
-  : "https://entertainment-web-app-back-wellsz.vercel.app/tmdb";
+  : "https://watch-api-wellsz.vercel.app/tmdb";
 const baseImageURL = "https://image.tmdb.org/t/p";
 
 export const tmdbImageUrl = (path, size) =>

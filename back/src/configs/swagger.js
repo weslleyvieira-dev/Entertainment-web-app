@@ -16,7 +16,7 @@ const options = {
     servers: [
       { url: "http://localhost:3000", description: "Localhost" },
       {
-        url: "https://entertainment-web-app-back-wellsz.vercel.app",
+        url: "https://watch-api-wellsz.vercel.app",
         description: "Vercel Production",
       },
     ],

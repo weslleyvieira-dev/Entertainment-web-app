@@ -3,7 +3,7 @@ import { authTokenStore } from "@/stores/authTokenStore";
 
 const baseURL = import.meta.env.DEV
   ? "http://localhost:3000"
-  : "https://entertainment-web-app-back-wellsz.vercel.app";
+  : "https://watch-api-wellsz.vercel.app";
 
 export const backendApi = axios.create({
   baseURL,
