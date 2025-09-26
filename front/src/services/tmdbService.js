@@ -1,23 +1,22 @@
 import { tmdbApi, imgTrending, imgDefault } from "@/api/tmdbApi";
 const YT_EMBED_BASE = "https://www.youtube.com/embed/";
 export default class TmdbService {
-  async getTrending(type = "all", time = "week", limit = 10, params = {}) {
+  async getTrending(type = "all", limit = 10, params = {}) {
     const results = [];
     let page = 1;
 
     do {
-      const { data } = await tmdbApi.get(`/trending/${type}/${time}`, {
+      const { data } = await tmdbApi.get(`/trending/${type}/week`, {
         params: { page, ...params },
       });
 
       if ((data?.results ?? []).length === 0) break;
+      data.results.sort((a, b) => b.popularity - a.popularity);
 
       let filtered;
-      if (type === "multi") {
+      if (type === "all") {
         filtered = (data.results || []).filter(
-          (item) =>
-            (item.media_type === "movie" || item.media_type === "tv") &&
-            Number(item?.popularity) >= 1
+          (item) => item.media_type === "movie" || item.media_type === "tv"
         );
 
         for (const item of filtered) {
@@ -25,10 +24,7 @@ export default class TmdbService {
           if (results.length >= limit) break;
         }
       } else {
-        filtered = (data.results || []).filter(
-          (item) => Number(item?.popularity) >= 1
-        );
-        for (const item of filtered) {
+        for (const item of data.results) {
           results.push(this._mapItem({ ...item, media_type: type }));
           if (results.length >= limit) break;
         }
