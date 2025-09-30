@@ -3,13 +3,12 @@ import { storeToRefs } from "pinia";
 import { authTokenStore } from "@/stores/authTokenStore";
 import Loading from "@/components/Loading.vue";
 
-const store = authTokenStore();
-const { isBootstrapped } = storeToRefs(store);
+const { isBootstrapped } = storeToRefs(authTokenStore());
 </script>
 
 <template>
   <Loading v-if="!isBootstrapped" />
-  <router-view />
+  <router-view v-else />
 </template>
 
 <style scoped></style>

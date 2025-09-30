@@ -43,8 +43,7 @@ export const authTokenStore = defineStore("authToken", {
     clearSession() {
       this.accessToken = null;
       this.user = null;
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
+      localStorage.clear();
     },
     markBootstrapped() {
       this.isBootstrapped = true;

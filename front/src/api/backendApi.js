@@ -39,10 +39,14 @@ backendApi.interceptors.response.use(
     try {
       if (!refreshPromise) {
         refreshPromise = backendApi
-          .post("/auth/refresh-token", null, {
-            _skipAutoRefresh: true,
-            _skipAuth: true,
-          })
+          .post(
+            "/auth/refresh-token",
+            {},
+            {
+              _skipAutoRefresh: true,
+              _skipAuth: true,
+            }
+          )
           .then(({ data }) => {
             const token = data?.accessToken;
             if (!token) throw new Error("Missing accessToken on refresh.");

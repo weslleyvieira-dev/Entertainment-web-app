@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { authTokenStore } from "@/stores/authTokenStore";
+import { bootstrapService } from "@/services/bootstrapService";
 import MainLayout from "@/layouts/MainLayout.vue";
 const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
@@ -44,8 +45,13 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const store = authTokenStore();
+
+  if (!store.isBootstrapped) {
+    await bootstrapService();
+  }
+
   const isAuthenticated = Boolean(store.accessToken);
 
   if (to.meta?.requiresAuth && !isAuthenticated) {
