@@ -30,11 +30,11 @@ const router = useRouter();
       />
       <img
         src="/assets/icon-nav-bookmark.svg"
-        alt="Bookmarks"
+        alt="Bookmarkeds"
         class="img-bookmarks"
-        :class="{ active: route.name === 'Bookmarks' }"
+        :class="{ active: route.name === 'Bookmarkeds' }"
         @click="
-          route.name !== 'Bookmarks' && router.push({ name: 'Bookmarks' })
+          route.name !== 'Bookmarkeds' && router.push({ name: 'Bookmarkeds' })
         "
       />
     </div>

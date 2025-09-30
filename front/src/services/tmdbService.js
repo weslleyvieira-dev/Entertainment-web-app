@@ -132,6 +132,29 @@ export default class TmdbService {
     return results;
   }
 
+  async getMovieById(id) {
+    const { data } = await tmdbApi.get(`/movie/${id}`);
+    const item = this._mapItem({ ...data, media_type: "movie" });
+    await this._addClassification([item]);
+    await this._addTrailer([item]);
+    return item;
+  }
+
+  async getSeriesById(id) {
+    const { data } = await tmdbApi.get(`/tv/${id}`);
+    const item = this._mapItem({ ...data, media_type: "tv" });
+    await this._addClassification([item]);
+    await this._addTrailer([item]);
+    return item;
+  }
+
+  searchBookmarkedItems(items, query) {
+    const lowerQuery = query.toLowerCase();
+    return items.filter((item) =>
+      item.title?.toLowerCase().includes(lowerQuery)
+    );
+  }
+
   _mapItem(item) {
     const path = item?.backdrop_path || item?.poster_path || "";
     const title =

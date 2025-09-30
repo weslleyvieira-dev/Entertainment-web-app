@@ -17,6 +17,7 @@ async function changeBookmarked() {
   item.isBookmarked = isBookmarked.value;
   await bookmarkService.changeBookmarked(item);
   bookmarkStore.updateFromLocalStorage();
+  await bookmarkStore.fetchBookmarkedItems();
   item.isBookmarked = isBookmarked.value;
 }
 </script>
