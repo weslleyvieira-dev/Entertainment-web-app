@@ -31,7 +31,7 @@ const bookmarkController = new BookmarkController();
  *             schema:
  *               type: array
  *               items:
- *                 type: string
+ *                 type: integer
  *       400:
  *         description: Invalid bookmark type. Must be either 'movies' or 'series'.
  *         content:
@@ -83,8 +83,8 @@ router.get("/", checkToken, bookmarkController.getBookmarks);
  *             type: object
  *             properties:
  *               itemId:
- *                 type: string
- *                 example: "tt1285016"
+ *                 type: integer
+ *                 example: 1285016
  *               type:
  *                 type: string
  *                 enum: [movies, series]
@@ -100,11 +100,11 @@ router.get("/", checkToken, bookmarkController.getBookmarks);
  *                 movies:
  *                   type: array
  *                   items:
- *                     type: string
+ *                     type: integer
  *                 series:
  *                   type: array
  *                   items:
- *                     type: string
+ *                     type: integer
  *       400:
  *         description: Item ID or bookmark type is invalid or missing.
  *         content:
@@ -160,7 +160,7 @@ router.post("/", checkToken, bookmarkController.addItem);
  *         name: itemId
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: The ID of the item to remove
  *     responses:
  *       200:
@@ -174,13 +174,13 @@ router.post("/", checkToken, bookmarkController.addItem);
  *                     movies:
  *                       type: array
  *                       items:
- *                         type: string
+ *                         type: integer
  *                 - type: object
  *                   properties:
  *                     series:
  *                       type: array
  *                       items:
- *                         type: string
+ *                         type: integer
  *       400:
  *         description: Item ID or bookmark type is invalid or missing.
  *         content:

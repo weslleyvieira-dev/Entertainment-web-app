@@ -44,10 +44,9 @@ export class BookmarkController {
       const userId = req.userId;
       let { itemId, type } = req.body;
 
-      itemId = itemId ? itemId.trim() : null;
       type = type ? type.trim() : null;
 
-      if (!itemId) {
+      if (typeof itemId !== "number" || !Number.isInteger(itemId)) {
         throw {
           status: 400,
           message: "Item ID is missing or invalid.",
@@ -76,11 +75,11 @@ export class BookmarkController {
     try {
       const userId = req.userId;
       let { itemId, type } = req.params;
+      itemId = Number(itemId);
 
-      itemId = itemId ? itemId.trim() : null;
       type = type ? type.trim() : null;
 
-      if (!itemId) {
+      if (typeof itemId !== "number" || !Number.isInteger(itemId)) {
         throw {
           status: 400,
           message: "Item ID is missing or invalid.",

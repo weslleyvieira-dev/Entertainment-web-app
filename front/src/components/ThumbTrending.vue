@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import Bookmark from "./Bookmark.vue";
 
 const showTrailer = ref(false);
 
@@ -55,6 +56,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       </button>
     </div>
     <img :src="imgSrc" :alt="item.title" class="thumb-img" />
+    <Bookmark :item="item" />
     <div class="thumb-details">
       <ul class="thumb-infos">
         <li>
