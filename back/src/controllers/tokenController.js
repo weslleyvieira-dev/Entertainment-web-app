@@ -23,8 +23,8 @@ export class TokenController {
         error.status = 401;
         res.clearCookie("refreshToken", {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "Lax",
+          secure: true,
+          sameSite: "None",
           path: "/",
         });
       }

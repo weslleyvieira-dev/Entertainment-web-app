@@ -141,8 +141,8 @@ export class UserController {
       const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
       res.cookie("refreshToken", token.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
+        secure: true,
+        sameSite: "None",
         maxAge: THIRTY_DAYS_MS,
         path: "/",
       });
@@ -166,8 +166,8 @@ export class UserController {
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
+        secure: true,
+        sameSite: "None",
         path: "/",
       });
 
@@ -620,8 +620,8 @@ export class UserController {
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Lax",
+        secure: true,
+        sameSite: "None",
         path: "/",
       });
 
