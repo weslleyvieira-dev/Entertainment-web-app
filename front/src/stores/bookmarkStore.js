@@ -31,10 +31,10 @@ export const useBookmarkStore = defineStore("bookmark", {
     async fetchBookmarkedItems() {
       const tmdbService = new TmdbService();
       const moviesPromises = this.movies.map((id) =>
-        tmdbService.getMovieById(id)
+        tmdbService.getItemById("movie", id)
       );
       const seriesPromises = this.series.map((id) =>
-        tmdbService.getSeriesById(id)
+        tmdbService.getItemById("tv", id)
       );
 
       this.moviesItems = await Promise.all(moviesPromises);

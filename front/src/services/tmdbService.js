@@ -11,32 +11,23 @@ export default class TmdbService {
       });
 
       if ((data?.results ?? []).length === 0) break;
-      data.results.sort((a, b) => b.popularity - a.popularity);
 
       let filtered;
       if (type === "all") {
         filtered = (data.results || []).filter(
           (item) => item.media_type === "movie" || item.media_type === "tv"
         );
-
-        for (const item of filtered) {
-          results.push(this._mapItem(item));
-          if (results.length >= limit) break;
-        }
       } else {
-        for (const item of data.results) {
-          results.push(this._mapItem({ ...item, media_type: type }));
-          if (results.length >= limit) break;
-        }
+        filtered = data.results.map((item) => ({ ...item, media_type: type }));
       }
 
+      const batchResults = await this._processBatch(filtered);
+      results.push(...batchResults);
       page += 1;
     } while (results.length < limit);
 
-    await this._addClassification(results);
-    await this._addTrailer(results);
-
-    return results;
+    results.sort((a, b) => b.popularity - a.popularity);
+    return results.slice(0, limit);
   }
 
   async getCurrentlyList(type, limit = 10, params = {}) {
@@ -50,42 +41,39 @@ export default class TmdbService {
       path = "/tv/on_the_air";
     } else return;
 
-    const { data } = await tmdbApi.get(`${path}`, {
-      params: { page, ...params },
-    });
+    do {
+      const { data } = await tmdbApi.get(`${path}`, {
+        params: { page, ...params },
+      });
 
-    if ((data?.results ?? []).length === 0) return;
+      if ((data?.results ?? []).length === 0) break;
 
-    for (const item of data.results) {
-      results.push(this._mapItem({ ...item, media_type: type }));
-      if (results.length >= limit) break;
-    }
+      const itemsWithType = data.results.map((item) => ({
+        ...item,
+        media_type: type,
+      }));
 
-    await this._addClassification(results);
-    await this._addTrailer(results);
+      const batchResults = await this._processBatch(itemsWithType);
+      results.push(...batchResults);
+      page += 1;
+    } while (results.length < limit);
 
-    return results;
+    results.sort((a, b) => b.popularity - a.popularity);
+    return results.slice(0, limit);
   }
 
   async getPopular(type, page = 1, params = {}) {
-    const results = [];
-
     const { data } = await tmdbApi.get(`/discover/${type}`, {
-      params: {
-        page: page,
-        ...params,
-      },
+      params: { page, ...params },
     });
-    if ((data?.results ?? []).length === 0) return;
 
-    for (const item of data.results) {
-      results.push(this._mapItem({ ...item, media_type: type }));
-    }
+    if ((data?.results ?? []).length === 0) return [];
 
-    await this._addClassification(results);
-    await this._addTrailer(results);
-
-    return results;
+    const itemsWithType = data.results.map((item) => ({
+      ...item,
+      media_type: type,
+    }));
+    return await this._processBatch(itemsWithType);
   }
 
   async search(query, type = "multi", page = 1, params = {}) {
@@ -94,58 +82,100 @@ export default class TmdbService {
 
     do {
       const { data } = await tmdbApi.get(`/search/${type}`, {
-        params: {
-          query,
-          page: currentPage,
-          ...params,
-        },
+        params: { query, page: currentPage, ...params },
       });
       if ((data?.results ?? []).length === 0) break;
 
       let filtered;
       if (type === "multi") {
-        filtered = (data.results || []).filter(
+        filtered = data.results.filter(
           (item) =>
             (item.media_type === "movie" || item.media_type === "tv") &&
             Number(item?.popularity) >= 1
         );
-
-        for (const item of filtered) {
-          results.push(this._mapItem(item));
-        }
       } else {
-        filtered = (data.results || []).filter(
-          (item) => Number(item?.popularity) >= 1
-        );
-        for (const item of filtered) {
-          results.push(this._mapItem({ ...item, media_type: type }));
-        }
+        filtered = data.results
+          .filter((item) => Number(item?.popularity) >= 1)
+          .map((item) => ({ ...item, media_type: type }));
       }
 
+      const batchResults = await this._processBatch(filtered);
+      results.push(...batchResults);
       currentPage += 1;
     } while (currentPage <= 3);
-
-    await this._addClassification(results);
-    await this._addTrailer(results);
 
     results.sort((a, b) => b.popularity - a.popularity);
     return results;
   }
 
-  async getMovieById(id) {
-    const { data } = await tmdbApi.get(`/movie/${id}`);
-    const item = this._mapItem({ ...data, media_type: "movie" });
-    await this._addClassification([item]);
-    await this._addTrailer([item]);
-    return item;
+  async getItemById(type, id) {
+    let append_to_response;
+    if (type === "movie") {
+      append_to_response = "release_dates,videos,external_ids";
+    } else if (type === "tv") {
+      append_to_response = "content_ratings,videos,external_ids";
+    } else {
+      return null;
+    }
+
+    const { data } = await tmdbApi.get(`/${type}/${id}`, {
+      params: { append_to_response },
+    });
+
+    const imdbId = data?.imdb_id || data?.external_ids?.imdb_id;
+    if (!imdbId) return null;
+
+    const classificationData = data?.release_dates || data?.content_ratings;
+    const classification = this._extractClassification(
+      type,
+      classificationData
+    );
+    if (!classification) return null;
+
+    const trailer = this._extractTrailer(data.videos);
+
+    const item = this._mapItem({ ...data, media_type: type });
+    return { ...item, classification, trailer };
   }
 
-  async getSeriesById(id) {
-    const { data } = await tmdbApi.get(`/tv/${id}`);
-    const item = this._mapItem({ ...data, media_type: "tv" });
-    await this._addClassification([item]);
-    await this._addTrailer([item]);
-    return item;
+  async _processBatch(items) {
+    const promises = items.map(async (item) => {
+      try {
+        const mappedItem = this._mapItem(item);
+
+        const [details, externalIds, videos] = await Promise.all([
+          mappedItem.type === "movie"
+            ? tmdbApi.get(`/movie/${mappedItem.id}/release_dates`)
+            : tmdbApi.get(`/tv/${mappedItem.id}/content_ratings`),
+          tmdbApi.get(`/${mappedItem.type}/${mappedItem.id}/external_ids`),
+          tmdbApi.get(`/${mappedItem.type}/${mappedItem.id}/videos`),
+        ]);
+
+        const hasImdbId =
+          externalIds.data?.imdb_id !== null &&
+          externalIds.data?.imdb_id !== undefined;
+        if (!hasImdbId) return null;
+
+        const classification = this._extractClassification(
+          mappedItem.type,
+          details.data
+        );
+        if (!classification) return null;
+
+        const trailer = this._extractTrailer(videos.data);
+
+        return {
+          ...mappedItem,
+          classification,
+          trailer,
+        };
+      } catch (error) {
+        return null;
+      }
+    });
+
+    const results = await Promise.all(promises);
+    return results.filter((item) => item !== null);
   }
 
   searchBookmarkedItems(items, query) {
@@ -155,66 +185,23 @@ export default class TmdbService {
     );
   }
 
-  _mapItem(item) {
-    const path = item?.backdrop_path || item?.poster_path || "";
-    const title =
-      item?.title ||
-      item?.name ||
-      item?.original_title ||
-      item?.original_name ||
-      "";
-    const dateStr = item?.release_date || item?.first_air_date || "";
-    const year = dateStr ? String(dateStr).slice(0, 4) : "";
-
-    return {
-      id: item?.id,
-      imgDefault: path ? imgDefault(path) : "",
-      imgTrending: path ? imgTrending(path) : "",
-      type: item?.media_type,
-      release_date: year,
-      title,
-      popularity: item?.popularity,
-    };
+  _extractClassification(type, data) {
+    if (type === "movie") {
+      const results = data?.results || [];
+      const pick = results.find((r) => r.iso_3166_1 === "US");
+      const rels = pick?.release_dates || [];
+      const withCert = rels.find(
+        (r) => r.certification && r.certification.trim()
+      );
+      return withCert?.certification || null;
+    } else {
+      const results = data?.results || [];
+      const pick = results.find((r) => r.iso_3166_1 === "US") || results[0];
+      return pick?.rating || null;
+    }
   }
 
-  async _addClassification(items) {
-    await Promise.all(
-      items.map(async (item) => {
-        try {
-          if (item.type === "movie") {
-            item.classification = await this._getMovieCertification(item.id);
-          } else if (item.type === "tv") {
-            item.classification = await this._getTvContentRating(item.id);
-          } else {
-            item.classification = null;
-          }
-        } catch (_) {
-          item.classification = null;
-        }
-      })
-    );
-    return items;
-  }
-
-  async _addTrailer(items) {
-    await Promise.all(
-      items.map(async (item) => {
-        try {
-          if (item.type === "movie" || item.type === "tv") {
-            item.trailer = await this._getTrailerKey(item.type, item.id);
-          } else {
-            item.trailer = null;
-          }
-        } catch (error) {
-          item.trailer = null;
-        }
-      })
-    );
-    return items;
-  }
-
-  async _getTrailerKey(type, id) {
-    const { data } = await tmdbApi.get(`/${type}/${id}/videos`);
+  _extractTrailer(data) {
     const videos = Array.isArray(data?.results) ? data.results : [];
     if (videos.length === 0) return null;
 
@@ -241,22 +228,25 @@ export default class TmdbService {
       : null;
   }
 
-  async _getMovieCertification(id) {
-    const { data } = await tmdbApi.get(`/movie/${id}/release_dates`);
-    const results = data?.results || [];
-    const pick = results.find((r) => r.iso_3166_1 === "US") || results[0];
+  _mapItem(item) {
+    const path = item?.backdrop_path || item?.poster_path || "";
+    const title =
+      item?.title ||
+      item?.name ||
+      item?.original_title ||
+      item?.original_name ||
+      "";
+    const dateStr = item?.release_date || item?.first_air_date || "";
+    const year = dateStr ? String(dateStr).slice(0, 4) : "";
 
-    const rels = pick?.release_dates || [];
-    const withCert = rels.find(
-      (r) => r.certification && r.certification.trim()
-    );
-    return withCert?.certification || null;
-  }
-
-  async _getTvContentRating(id) {
-    const { data } = await tmdbApi.get(`/tv/${id}/content_ratings`);
-    const results = data?.results || [];
-    const pick = results.find((r) => r.iso_3166_1 === "US") || results[0];
-    return pick?.rating || null;
+    return {
+      id: item?.id,
+      imgDefault: path ? imgDefault(path) : "",
+      imgTrending: path ? imgTrending(path) : "",
+      type: item?.media_type,
+      release_date: year,
+      title,
+      popularity: item?.popularity,
+    };
   }
 }
