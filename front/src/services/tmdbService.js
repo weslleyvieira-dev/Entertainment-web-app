@@ -1,13 +1,13 @@
 import { tmdbApi, imgTrending, imgDefault } from "@/api/tmdbApi";
 const YT_EMBED_BASE = "https://www.youtube.com/embed/";
 export default class TmdbService {
-  async getTrending(type = "all", limit = 10, params = {}) {
+  async getTrending(type = "all", limit = 10) {
     const results = [];
     let page = 1;
 
     do {
       const { data } = await tmdbApi.get(`/trending/${type}/week`, {
-        params: { page, ...params },
+        params: { page },
       });
 
       if ((data?.results ?? []).length === 0) break;
@@ -30,7 +30,7 @@ export default class TmdbService {
     return results.slice(0, limit);
   }
 
-  async getCurrentlyList(type, limit = 10, params = {}) {
+  async getCurrentlyList(type, limit = 10) {
     const results = [];
     let page = 1;
     let path;
@@ -43,7 +43,7 @@ export default class TmdbService {
 
     do {
       const { data } = await tmdbApi.get(`${path}`, {
-        params: { page, ...params },
+        params: { page },
       });
 
       if ((data?.results ?? []).length === 0) break;
@@ -62,10 +62,8 @@ export default class TmdbService {
     return results.slice(0, limit);
   }
 
-  async getPopular(type, page = 1, params = {}) {
-    const { data } = await tmdbApi.get(`/discover/${type}`, {
-      params: { page, ...params },
-    });
+  async getPopular(type) {
+    const { data } = await tmdbApi.get(`/discover/${type}`);
 
     if ((data?.results ?? []).length === 0) return [];
 
@@ -76,33 +74,29 @@ export default class TmdbService {
     return await this._processBatch(itemsWithType);
   }
 
-  async search(query, type = "multi", page = 1, params = {}) {
+  async search(query, type = "multi") {
     const results = [];
-    let currentPage = page;
 
-    do {
-      const { data } = await tmdbApi.get(`/search/${type}`, {
-        params: { query, page: currentPage, ...params },
-      });
-      if ((data?.results ?? []).length === 0) break;
+    const { data } = await tmdbApi.get(`/search/${type}`, {
+      params: { query },
+    });
+    if ((data?.results ?? []).length === 0) return null;
 
-      let filtered;
-      if (type === "multi") {
-        filtered = data.results.filter(
-          (item) =>
-            (item.media_type === "movie" || item.media_type === "tv") &&
-            Number(item?.popularity) >= 1
-        );
-      } else {
-        filtered = data.results
-          .filter((item) => Number(item?.popularity) >= 1)
-          .map((item) => ({ ...item, media_type: type }));
-      }
+    let filtered;
+    if (type === "multi") {
+      filtered = data.results.filter(
+        (item) =>
+          (item.media_type === "movie" || item.media_type === "tv") &&
+          Number(item?.popularity) >= 2
+      );
+    } else {
+      filtered = data.results
+        .filter((item) => Number(item?.popularity) >= 1)
+        .map((item) => ({ ...item, media_type: type }));
+    }
 
-      const batchResults = await this._processBatch(filtered);
-      results.push(...batchResults);
-      currentPage += 1;
-    } while (currentPage <= 3);
+    const batchResults = await this._processBatch(filtered);
+    results.push(...batchResults);
 
     results.sort((a, b) => b.popularity - a.popularity);
     return results;
@@ -111,9 +105,9 @@ export default class TmdbService {
   async getItemById(type, id) {
     let append_to_response;
     if (type === "movie") {
-      append_to_response = "release_dates,videos,external_ids";
+      append_to_response = "release_dates,videos";
     } else if (type === "tv") {
-      append_to_response = "content_ratings,videos,external_ids";
+      append_to_response = "content_ratings,videos";
     } else {
       return null;
     }
@@ -121,9 +115,6 @@ export default class TmdbService {
     const { data } = await tmdbApi.get(`/${type}/${id}`, {
       params: { append_to_response },
     });
-
-    const imdbId = data?.imdb_id || data?.external_ids?.imdb_id;
-    if (!imdbId) return null;
 
     const classificationData = data?.release_dates || data?.content_ratings;
     const classification = this._extractClassification(
@@ -142,27 +133,27 @@ export default class TmdbService {
     const promises = items.map(async (item) => {
       try {
         const mappedItem = this._mapItem(item);
-
-        const [details, externalIds, videos] = await Promise.all([
-          mappedItem.type === "movie"
-            ? tmdbApi.get(`/movie/${mappedItem.id}/release_dates`)
-            : tmdbApi.get(`/tv/${mappedItem.id}/content_ratings`),
-          tmdbApi.get(`/${mappedItem.type}/${mappedItem.id}/external_ids`),
-          tmdbApi.get(`/${mappedItem.type}/${mappedItem.id}/videos`),
-        ]);
-
-        const hasImdbId =
-          externalIds.data?.imdb_id !== null &&
-          externalIds.data?.imdb_id !== undefined;
-        if (!hasImdbId) return null;
+        const { data } = await tmdbApi.get(
+          `/${mappedItem.type}/${mappedItem.id}`,
+          {
+            params: {
+              append_to_response:
+                mappedItem.type === "movie"
+                  ? "release_dates,videos"
+                  : "content_ratings,videos",
+            },
+          }
+        );
 
         const classification = this._extractClassification(
           mappedItem.type,
-          details.data
+          mappedItem.type === "movie"
+            ? data.release_dates
+            : data.content_ratings
         );
         if (!classification) return null;
 
-        const trailer = this._extractTrailer(videos.data);
+        const trailer = this._extractTrailer(data.videos);
 
         return {
           ...mappedItem,
