@@ -26,11 +26,19 @@ function onResults(list) {
 async function fetchData() {
   isLoading.value = true;
   try {
-    bookmarks.value = await bookmarkService.getAllBookmarkeds();
+    const [bookmarksResult, trendingResult, inTheatresResult, onTheAirResult] =
+      await Promise.all([
+        bookmarkService.getAllBookmarkeds(),
+        tmdbService.getTrending(),
+        tmdbService.getCurrentlyList("movie"),
+        tmdbService.getCurrentlyList("tv"),
+      ]);
+
+    bookmarks.value = bookmarksResult;
     bookmarkStore.setBookmarks(bookmarks.value);
-    trendingItems.value = await tmdbService.getTrending();
-    inTheatres.value = await tmdbService.getCurrentlyList("movie");
-    onTheAir.value = await tmdbService.getCurrentlyList("tv");
+    trendingItems.value = trendingResult;
+    inTheatres.value = inTheatresResult;
+    onTheAir.value = onTheAirResult;
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +

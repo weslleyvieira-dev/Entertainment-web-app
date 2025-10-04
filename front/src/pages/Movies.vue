@@ -2,7 +2,6 @@
 import { ref, onBeforeMount } from "vue";
 import { useToast } from "vue-toastification";
 import { useBookmarkStore } from "@/stores/bookmarkStore";
-import BookmarkService from "@/services/bookmarkService";
 import TmdbService from "@/services/tmdbService.js";
 import SearchLayout from "@/layouts/SearchLayout.vue";
 import ThumbTrending from "@/components/ThumbTrending.vue";
@@ -11,10 +10,8 @@ import Loading from "@/components/Loading.vue";
 
 const toast = useToast();
 const bookmarkStore = useBookmarkStore();
-const bookmarkService = new BookmarkService();
 const tmdbService = new TmdbService();
 const isLoading = ref(true);
-const bookmarks = ref({});
 const trendingItems = ref([]);
 const inTheatres = ref([]);
 const recommended = ref([]);
@@ -27,11 +24,16 @@ function onResults(list) {
 async function fetchData() {
   isLoading.value = true;
   try {
-    bookmarks.value = await bookmarkService.getAllBookmarkeds();
-    bookmarkStore.setBookmarks(bookmarks.value);
-    trendingItems.value = await tmdbService.getTrending("movie");
-    inTheatres.value = await tmdbService.getCurrentlyList("movie");
-    recommended.value = await tmdbService.getPopular("movie");
+    const [trendingResult, inTheatresResult, recommendedResult] =
+      await Promise.all([
+        tmdbService.getTrending("movie"),
+        tmdbService.getCurrentlyList("movie"),
+        tmdbService.getPopular("movie"),
+      ]);
+    bookmarkStore.updateFromLocalStorage();
+    trendingItems.value = trendingResult;
+    inTheatres.value = inTheatresResult;
+    recommended.value = recommendedResult;
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +
