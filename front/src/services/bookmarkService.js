@@ -33,8 +33,8 @@ export default class BookmarkService {
           },
         });
       }
-    } catch (err) {
-      throw err.response?.data ?? { error: err.message };
+    } catch (error) {
+      throw error.response?.data ?? { error: error.message };
     }
 
     const data = response.data ?? [];

@@ -76,30 +76,51 @@ export default class TmdbService {
 
   async search(query, type = "multi") {
     const results = [];
-
-    const { data } = await tmdbApi.get(`/search/${type}`, {
-      params: { query },
-    });
-    if ((data?.results ?? []).length === 0) return null;
-
-    let filtered;
     if (type === "multi") {
-      filtered = data.results.filter(
-        (item) =>
-          (item.media_type === "movie" || item.media_type === "tv") &&
-          Number(item?.popularity) >= 2
-      );
+      const { data: movieData } = await tmdbApi.get(`/search/movie`, {
+        params: { query },
+      });
+      const movies = (movieData?.results ?? [])
+        .filter((item) => Number(item?.popularity) >= 2)
+        .map((item) => ({ ...item, media_type: "movie" }));
+
+      const { data: tvData } = await tmdbApi.get(`/search/tv`, {
+        params: { query },
+      });
+      const series = (tvData?.results ?? [])
+        .filter((item) => Number(item?.popularity) >= 2)
+        .map((item) => ({ ...item, media_type: "tv" }));
+
+      const batchResults = await this._processBatch([...movies, ...series]);
+      results.push(...batchResults);
+
+      results.sort((a, b) => b.popularity - a.popularity);
+      return results;
     } else {
-      filtered = data.results
-        .filter((item) => Number(item?.popularity) >= 1)
-        .map((item) => ({ ...item, media_type: type }));
+      const { data } = await tmdbApi.get(`/search/${type}`, {
+        params: { query },
+      });
+      if ((data?.results ?? []).length === 0) return null;
+
+      let filtered;
+      if (type === "multi") {
+        filtered = data.results.filter(
+          (item) =>
+            (item.media_type === "movie" || item.media_type === "tv") &&
+            Number(item?.popularity) >= 2
+        );
+      } else {
+        filtered = data.results
+          .filter((item) => Number(item?.popularity) >= 1)
+          .map((item) => ({ ...item, media_type: type }));
+      }
+
+      const batchResults = await this._processBatch(filtered);
+      results.push(...batchResults);
+
+      results.sort((a, b) => b.popularity - a.popularity);
+      return results;
     }
-
-    const batchResults = await this._processBatch(filtered);
-    results.push(...batchResults);
-
-    results.sort((a, b) => b.popularity - a.popularity);
-    return results;
   }
 
   async getItemById(type, id) {

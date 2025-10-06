@@ -62,10 +62,10 @@ backendApi.interceptors.response.use(
       const newToken = await refreshPromise;
       original.headers.Authorization = `Bearer ${newToken}`;
       return backendApi(original);
-    } catch (err) {
+    } catch (error) {
       const store = authTokenStore();
       if (typeof store.clearSession === "function") store.clearSession();
-      return Promise.reject(err);
+      return Promise.reject(error);
     }
   }
 );

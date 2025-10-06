@@ -40,7 +40,7 @@ async function onSearch(value) {
     results.value = Array.isArray(list) ? list : [];
     resultsQuery.value = q;
     emit("results", results.value);
-  } catch (e) {
+  } catch (error) {
     results.value = [];
     resultsQuery.value = q;
     toast.error("Error while searching, try again later.");
