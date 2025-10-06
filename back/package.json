@@ -19,6 +19,8 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "node-cache": "^5.1.2",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.6",
     "nodemailer-express-handlebars": "^7.0.0",
     "postgres": "^3.4.7",
