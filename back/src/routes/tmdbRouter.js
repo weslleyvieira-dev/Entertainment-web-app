@@ -1,6 +1,5 @@
 import { Router } from "express";
 import NodeCache from "node-cache";
-import cron from "node-cron";
 import {
   prefetchTrending,
   prefetchPopular,
@@ -30,14 +29,19 @@ async function runAllPrefetch() {
   }
 }
 
-runAllPrefetch().catch((err) => {
-  console.error("[Prefetch] Initial prefetch failed:", err?.message ?? err);
-});
+router.get("/prefetch", async (req, res) => {
+  const auth = req.headers.authorization || req.headers.Authorization;
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-cron.schedule("0 */12 * * *", () => {
-  runAllPrefetch().catch((err) => {
-    console.error("[Prefetch] Scheduled prefetch failed:", err?.message ?? err);
-  });
+  try {
+    await runAllPrefetch();
+    return res.status(200).json({ ok: true, message: "Prefetch completed" });
+  } catch (error) {
+    console.error("[Prefetch] Vercel cron prefetch failed:", error);
+    return res.status(500).json({ ok: false, error: String(error) });
+  }
 });
 
 router.use(async (req, res) => {

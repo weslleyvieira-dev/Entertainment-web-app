@@ -11,5 +11,11 @@
       "src": "/api/(.*)",
       "dest": "back/src/index.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/prefetch",
+      "schedule": "0 */12 * * *"
+    }
   ]
 }
