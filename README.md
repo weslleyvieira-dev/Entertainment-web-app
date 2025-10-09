@@ -1,35 +1,50 @@
-### Entertainment web app solution
+<h1 align="center" style="font-weight: bold;">Entertainment Web App</h1>
 
-This is a solution to the [Entertainment web app challenge on Frontend Mentor](https://www.frontendmentor.io/challenges/entertainment-web-app-J-UhgAW1X).
+<p align="center">
+Fullstack solution for browsing movies and TV series, managing bookmarks, and user authentication. Built with Vue 3 frontend and Node.js/Express backend, integrating TMDB and PostgreSQL.
+</p>
 
-### The challenge
+<p align="center">
+  <a href="#technologies">Technologies</a> •
+  <a href="#repo-structure">Repo Structure</a> •
+  <a href="#live-demo">Live Demo</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#author">Author</a>
+</p>
 
-Users should be able to:
+<h2 id="technologies">💻 Technologies</h2>
 
-- View the optimal layout for the app depending on their device's screen size
-- See hover states for all interactive elements on the page
-- Navigate between Home, Movies, TV Series, and Bookmarked Shows pages
-- Add/Remove bookmarks from all movies and TV series
-- Search for relevant shows on all pages
+- Vue 3
+- Pinia, Vue Router, Axios
+- Node.js, Express.js
+- PostgreSQL, Prisma ORM
+- Nodemailer, Swagger
+- TMDB API
 
-<!-- ### Screenshot
+<h2 id="repo-structure">📁 Repo Structure</h2>
 
-![](./screenshot.jpg)
+- `/front` — [Frontend README](front/README.md)
+- `/back` — [Backend README](back/README.md)
 
-### Links
+<h2 id="live-demo">🚀 Live Demo</h2>
 
-- Solution URL: [Add solution URL here](https://your-solution-url.com)
-- Live Site URL: [Add live site URL here](https://your-live-site-url.com) -->
+- Frontend: [watch-wellsz.vercel.app/home](https://watch-wellsz.vercel.app/home)
+- Backend: [watch-api-wellsz.vercel.app/docs](https://watch-api-wellsz.vercel.app/docs)
 
-### Built with
+<h2 id="getting-started">🛠️ Getting Started</h2>
 
-- Vue.js
-- Node.js
-- Express.js
-- PostgreSQL
-- JavaScript
+Clone the repository:
 
-## Author
+```sh
+git clone https://github.com/weslleyvieira-dev/Entertainment-web-app
+```
+
+See setup instructions for each part:
+
+- [Frontend setup](front/README.md)
+- [Backend setup](back/README.md)
+
+<h2 id="author">👤 Author</h2>
 
 - [Linkedin](https://www.linkedin.com/in/weslleyvieira-dev/)
 - [Portfolio](https://portfolio-weslleyvieira-projects.vercel.app/)

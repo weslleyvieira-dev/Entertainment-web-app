@@ -1,29 +1,62 @@
-# front
+<h1 align="center" style="font-weight: bold;">Frontend - Entertainment Web App</h1>
 
-This template should help get you started developing with Vue 3 in Vite.
+<p align="center">
+Web App built with Vue 3 (Vite) for browsing movies and TV series, managing bookmarks, and integrating with TMDB via the backend API.
+</p>
 
-## Recommended IDE Setup
+<p align="center">
+  <a href="#technologies">Technologies</a> •
+  <a href="#prerequisites">Prerequisites</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#environment">Environment</a> •
+  <a href="#run">Run</a> •
+  <a href="#build">Build</a> •
+  <a href="#author">Author</a>
+</p>
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+<h2 id="technologies">💻 Technologies</h2>
 
-## Customize configuration
+- Vue 3 + Vite
+- Vue Router
+- Pinia
+- Axios
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+<h2 id="prerequisites">📦 Prerequisites</h2>
 
-## Project Setup
+- Node.js 18+
+
+<h2 id="getting-started">🚀 Getting Started</h2>
+
+Install:
 
 ```sh
+cd /front
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+<h2 id="run">🏃 Run</h2>
+
+Development:
 
 ```sh
 npm run dev
 ```
 
-### Compile and Minify for Production
+Preview (after build):
+
+```sh
+npm run preview
+```
+
+<h2 id="build">📦 Build</h2>
 
 ```sh
 npm run build
 ```
+
+The frontend consumes the backend documented in [back/README.md](../back/README.md).
+
+<h2 id="author">👤 Author</h2>
+
+- [Linkedin](https://www.linkedin.com/in/weslleyvieira-dev/)
+- [Portfolio](https://portfolio-weslleyvieira-projects.vercel.app/)
