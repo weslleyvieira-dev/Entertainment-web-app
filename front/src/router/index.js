@@ -4,6 +4,8 @@ import { bootstrapService } from "@/services/bootstrapService";
 import MainLayout from "@/layouts/MainLayout.vue";
 const Login = () => import("@/pages/Login.vue");
 const SignUp = () => import("@/pages/SignUp.vue");
+const ForgotPassword = () => import("@/pages/ForgotPassword.vue");
+const ResetPassword = () => import("@/pages/ResetPassword.vue");
 const Home = () => import("@/pages/Home.vue");
 const Movies = () => import("@/pages/Movies.vue");
 const TVSeries = () => import("@/pages/TVSeries.vue");
@@ -15,6 +17,16 @@ const router = createRouter({
     { path: "/", redirect: { name: "Home" } },
     { path: "/login", name: "Login", component: Login },
     { path: "/sign-up", name: "Sign Up", component: SignUp },
+    {
+      path: "/forgot-password",
+      name: "Forgot Password",
+      component: ForgotPassword,
+    },
+    {
+      path: "/reset-password",
+      name: "Reset Password",
+      component: ResetPassword,
+    },
     {
       path: "/",
       component: MainLayout,
@@ -63,6 +75,10 @@ router.beforeEach(async (to) => {
   }
 
   return true;
+});
+
+router.afterEach((to) => {
+  document.title = `${to.name} - WatchApp` || "Entertainment Web App";
 });
 
 export default router;

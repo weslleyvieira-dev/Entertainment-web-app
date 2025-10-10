@@ -30,4 +30,37 @@ export default class AuthService {
       data: response.data,
     };
   }
+
+  async forgotPassword(credentials) {
+    const response = await backendApi.post(
+      "/auth/password/forgot",
+      credentials,
+      {
+        _skipAutoRefresh: true,
+        _skipAuth: true,
+      }
+    );
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
+
+  async resetPassword(credentials) {
+    const { token, newPassword, newPasswordConfirm } = credentials;
+    const response = await backendApi.post(
+      `/auth/password/reset/${encodeURIComponent(token)}`,
+      { newPassword, newPasswordConfirm },
+      {
+        _skipAutoRefresh: true,
+        _skipAuth: true,
+      }
+    );
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
 }

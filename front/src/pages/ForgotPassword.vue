@@ -11,30 +11,31 @@ const router = useRouter();
 const toast = useToast();
 const isSubmitted = ref(false);
 
-const loginData = reactive({
+const forgotPasswordData = reactive({
   email: "",
-  password: "",
 });
 
 const errors = reactive({
   email: "",
-  password: "",
 });
 
-async function handleLogin() {
+async function handleForgotPassword() {
   if (isSubmitted.value) return;
   isSubmitted.value = true;
   Object.keys(errors).forEach((key) => (errors[key] = ""));
 
-  if (!validateLogin()) {
+  if (!validateForgotPassword()) {
     isSubmitted.value = false;
     return;
   }
 
   try {
-    const response = await authService.loginUser(loginData);
+    const response = await authService.forgotPassword(forgotPasswordData);
     if (response.status === 200) {
-      router.push({ name: "Home" });
+      toast.success(
+        "If the email is registered, you will receive instructions to reset your password shortly.",
+        { timeout: 10000 }
+      );
     }
   } catch (error) {
     handleError(error);
@@ -43,19 +44,13 @@ async function handleLogin() {
   }
 }
 
-function validateLogin() {
+function validateForgotPassword() {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-  if (!loginData.email) {
+  if (!forgotPasswordData.email) {
     errors.email = "Can't be empty";
-  } else if (!emailRegex.test(loginData.email)) {
+  } else if (!emailRegex.test(forgotPasswordData.email)) {
     errors.email = "Invalid format";
-  }
-
-  if (!loginData.password) {
-    errors.password = "Can't be empty";
-  } else if (loginData.password.length < 8) {
-    errors.password = "Must have at least 8 characters";
   }
 
   return Object.values(errors).every((error) => error === "");
@@ -67,11 +62,7 @@ function handleError(error) {
       case 401:
       case 422:
         errors.email = " ";
-        errors.password = " ";
-        toast.error("Please check your email and password and try again.");
-        break;
-      case 500:
-        toast.error("An error occurred on the server. Please try again later.");
+        toast.error("Please check your email and try again.");
         break;
       default:
         toast.error("An unexpected error occurred. Please try again later.");
@@ -90,50 +81,31 @@ function clearError(field) {
 </script>
 
 <template>
-  <div class="login-layout">
+  <div class="forgotPassword-layout">
     <img src="/assets/logo.svg" alt="Logo" class="logo" />
-    <form id="login-form" @submit.prevent="handleLogin" class="login-container">
-      <h1 class="text-preset-1">Login</h1>
-      <div class="login-inputs">
-        <div class="input-container">
-          <input
-            name="email"
-            v-model.trim="loginData.email"
-            type="text"
-            placeholder="Email address"
-            aria-label="Email address"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.email }"
-            @focus="clearError('email')"
-          />
-          <span v-if="errors.email" class="text-preset-5 error-message">{{
-            errors.email
-          }}</span>
-        </div>
-        <div class="input-container">
-          <input
-            name="password"
-            v-model.trim="loginData.password"
-            type="password"
-            placeholder="Password"
-            aria-label="Password"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.password }"
-            @focus="clearError('password')"
-          />
-          <span v-if="errors.password" class="text-preset-5 error-message">{{
-            errors.password
-          }}</span>
-        </div>
-        <h4 class="text-preset-4 signup-prompt">
-          Forgot your password?<a
-            @click="router.push({ name: 'Forgot Password' })"
-            >Reset It</a
-          >
-        </h4>
+    <form
+      id="forgotPassword-form"
+      @submit.prevent="handleForgotPassword"
+      class="forgotPassword-container"
+    >
+      <h1 class="text-preset-1">Forgot Password</h1>
+      <div class="input-container">
+        <input
+          name="email"
+          v-model.trim="forgotPasswordData.email"
+          type="text"
+          placeholder="Email address"
+          aria-label="Email address"
+          class="text-preset-4 input-item"
+          :class="{ error: errors.email }"
+          @focus="clearError('email')"
+        />
+        <span v-if="errors.email" class="text-preset-5 error-message">{{
+          errors.email
+        }}</span>
       </div>
-      <div class="login-submits">
-        <SubmitButton>Login to your account</SubmitButton>
+      <div class="forgotPassword-submits">
+        <SubmitButton>Reset password</SubmitButton>
         <h4 class="text-preset-4 signup-prompt">
           Don't have an account?<a @click="router.push({ name: 'Sign Up' })"
             >Sign Up</a
@@ -146,7 +118,7 @@ function clearError(field) {
 </template>
 
 <style scoped>
-.login-layout {
+.forgotPassword-layout {
   width: 100dvw;
   height: 100dvh;
   display: flex;
@@ -160,7 +132,7 @@ function clearError(field) {
   height: 1.6rem;
 }
 
-.login-container {
+.forgotPassword-container {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -178,8 +150,7 @@ function clearError(field) {
   color: white;
 }
 
-.login-inputs,
-.login-submits {
+.forgotPassword-submits {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -244,11 +215,11 @@ function clearError(field) {
 }
 
 @media (min-width: 768px) {
-  .login-layout {
+  .forgotPassword-layout {
     padding: 5rem 1.5rem 0;
   }
 
-  .login-container {
+  .forgotPassword-container {
     width: 25rem;
     border-radius: 1.25rem;
     margin-top: 5rem;

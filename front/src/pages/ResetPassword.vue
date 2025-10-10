@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
 import SubmitButton from "@/components/SubmitButton.vue";
 import AuthService from "@/services/authService";
@@ -8,32 +8,42 @@ import Loading from "@/components/Loading.vue";
 
 const authService = new AuthService();
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const isSubmitted = ref(false);
+const token = String(route.query.token || "");
 
-const loginData = reactive({
-  email: "",
-  password: "",
+const resetPasswordData = reactive({
+  token,
+  newPassword: "",
+  newPasswordConfirm: "",
 });
 
 const errors = reactive({
-  email: "",
-  password: "",
+  newPassword: "",
+  newPasswordConfirm: "",
 });
 
-async function handleLogin() {
+async function handleResetPassword() {
   if (isSubmitted.value) return;
   isSubmitted.value = true;
   Object.keys(errors).forEach((key) => (errors[key] = ""));
 
-  if (!validateLogin()) {
+  if (!validateResetPassword()) {
+    isSubmitted.value = false;
+    return;
+  }
+
+  if (!token) {
+    toast.error("Invalid or expired link.");
     isSubmitted.value = false;
     return;
   }
 
   try {
-    const response = await authService.loginUser(loginData);
+    const response = await authService.resetPassword(resetPasswordData);
     if (response.status === 200) {
+      toast.success("Your password has been reset successfully.");
       router.push({ name: "Home" });
     }
   } catch (error) {
@@ -43,19 +53,25 @@ async function handleLogin() {
   }
 }
 
-function validateLogin() {
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-  if (!loginData.email) {
-    errors.email = "Can't be empty";
-  } else if (!emailRegex.test(loginData.email)) {
-    errors.email = "Invalid format";
+function validateResetPassword() {
+  if (!resetPasswordData.newPassword) {
+    errors.newPassword = "Can't be empty";
+  } else if (resetPasswordData.newPassword.length < 8) {
+    errors.newPassword = "Must have at least 8 characters";
   }
 
-  if (!loginData.password) {
-    errors.password = "Can't be empty";
-  } else if (loginData.password.length < 8) {
-    errors.password = "Must have at least 8 characters";
+  if (!resetPasswordData.newPasswordConfirm) {
+    errors.newPasswordConfirm = "Can't be empty";
+  } else if (resetPasswordData.newPasswordConfirm.length < 8) {
+    errors.newPasswordConfirm = "Must have at least 8 characters";
+  }
+
+  if (!errors.newPassword && !errors.newPasswordConfirm) {
+    if (
+      resetPasswordData.newPassword !== resetPasswordData.newPasswordConfirm
+    ) {
+      errors.newPasswordConfirm = "Passwords must match";
+    }
   }
 
   return Object.values(errors).every((error) => error === "");
@@ -66,9 +82,9 @@ function handleError(error) {
     switch (error.response.status) {
       case 401:
       case 422:
-        errors.email = " ";
-        errors.password = " ";
-        toast.error("Please check your email and password and try again.");
+        errors.newPassword = " ";
+        errors.newPasswordConfirm = " ";
+        toast.error("Please check your passwords and try again.");
         break;
       case 500:
         toast.error("An error occurred on the server. Please try again later.");
@@ -90,55 +106,50 @@ function clearError(field) {
 </script>
 
 <template>
-  <div class="login-layout">
+  <div class="resetPassword-layout">
     <img src="/assets/logo.svg" alt="Logo" class="logo" />
-    <form id="login-form" @submit.prevent="handleLogin" class="login-container">
-      <h1 class="text-preset-1">Login</h1>
-      <div class="login-inputs">
-        <div class="input-container">
-          <input
-            name="email"
-            v-model.trim="loginData.email"
-            type="text"
-            placeholder="Email address"
-            aria-label="Email address"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.email }"
-            @focus="clearError('email')"
-          />
-          <span v-if="errors.email" class="text-preset-5 error-message">{{
-            errors.email
-          }}</span>
-        </div>
+    <form
+      id="resetPassword-form"
+      @submit.prevent="handleResetPassword"
+      class="resetPassword-container"
+    >
+      <h1 class="text-preset-1">Reset Password</h1>
+      <div class="resetPassword-inputs">
         <div class="input-container">
           <input
             name="password"
-            v-model.trim="loginData.password"
+            v-model.trim="resetPasswordData.newPassword"
             type="password"
-            placeholder="Password"
-            aria-label="Password"
+            placeholder="New password"
+            aria-label="New password"
             class="text-preset-4 input-item"
-            :class="{ error: errors.password }"
-            @focus="clearError('password')"
+            :class="{ error: errors.newPassword }"
+            @focus="clearError('newPassword')"
           />
-          <span v-if="errors.password" class="text-preset-5 error-message">{{
-            errors.password
+          <span v-if="errors.newPassword" class="text-preset-5 error-message">{{
+            errors.newPassword
           }}</span>
         </div>
-        <h4 class="text-preset-4 signup-prompt">
-          Forgot your password?<a
-            @click="router.push({ name: 'Forgot Password' })"
-            >Reset It</a
+        <div class="input-container">
+          <input
+            name="passwordConfirmation"
+            v-model.trim="resetPasswordData.newPasswordConfirm"
+            type="password"
+            placeholder="Repeat password"
+            aria-label="Repeat password"
+            class="text-preset-4 input-item"
+            :class="{ error: errors.newPasswordConfirm }"
+            @focus="clearError('newPasswordConfirm')"
+          />
+          <span
+            v-if="errors.newPasswordConfirm"
+            class="text-preset-5 error-message"
+            >{{ errors.newPasswordConfirm }}</span
           >
-        </h4>
+        </div>
       </div>
-      <div class="login-submits">
-        <SubmitButton>Login to your account</SubmitButton>
-        <h4 class="text-preset-4 signup-prompt">
-          Don't have an account?<a @click="router.push({ name: 'Sign Up' })"
-            >Sign Up</a
-          >
-        </h4>
+      <div class="resetPassword-submits">
+        <SubmitButton>Set new password</SubmitButton>
       </div>
     </form>
     <Loading v-if="isSubmitted" />
@@ -146,7 +157,7 @@ function clearError(field) {
 </template>
 
 <style scoped>
-.login-layout {
+.resetPassword-layout {
   width: 100dvw;
   height: 100dvh;
   display: flex;
@@ -160,7 +171,7 @@ function clearError(field) {
   height: 1.6rem;
 }
 
-.login-container {
+.resetPassword-container {
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -178,8 +189,8 @@ function clearError(field) {
   color: white;
 }
 
-.login-inputs,
-.login-submits {
+.resetPassword-inputs,
+.resetPassword-submits {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -244,11 +255,11 @@ function clearError(field) {
 }
 
 @media (min-width: 768px) {
-  .login-layout {
+  .resetPassword-layout {
     padding: 5rem 1.5rem 0;
   }
 
-  .login-container {
+  .resetPassword-container {
     width: 25rem;
     border-radius: 1.25rem;
     margin-top: 5rem;

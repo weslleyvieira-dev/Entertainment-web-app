@@ -6,6 +6,10 @@ import { TokenService } from "../services/tokenService.js";
 
 const userService = new UserService();
 const tokenService = new TokenService();
+const frontBaseUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://watch-wellsz.vercel.app"
+    : "http://localhost:5173";
 
 export class UserController {
   async registerUser(req, res) {
@@ -211,13 +215,14 @@ export class UserController {
 
       const type = "PASSWORD_RESET";
       const emailToken = await tokenService.generateEmailToken(user.id, type);
+      const resetUrl = `${frontBaseUrl}/reset-password?token=${emailToken}`;
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,
         to: user.email,
         subject: "Password Reset",
         template: "requestPasswordReset",
-        context: { emailToken },
+        context: { resetUrl },
       };
 
       try {
