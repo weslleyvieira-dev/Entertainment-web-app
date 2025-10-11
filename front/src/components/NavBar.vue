@@ -1,7 +1,33 @@
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import AuthService from "@/services/authService";
+
+const authService = new AuthService();
 const route = useRoute();
 const router = useRouter();
+const isActionsOpen = ref(false);
+
+function toggleProfileActions() {
+  isActionsOpen.value = !isActionsOpen.value;
+}
+
+function closeActions() {
+  if (isActionsOpen.value) isActionsOpen.value = false;
+}
+
+async function logoutUser() {
+  await authService.logoutUser();
+  router.push({ name: "Login" });
+}
+
+onMounted(() => {
+  window.addEventListener("click", closeActions);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("click", closeActions);
+});
 </script>
 
 <template>
@@ -42,8 +68,18 @@ const router = useRouter();
       src="/assets/icon-nav-profile.svg"
       alt="Profile"
       class="profile-icon"
-      @click="route.name !== 'Profile' && router.push({ name: 'Profile' })"
+      @click.stop="toggleProfileActions"
     />
+    <div v-if="isActionsOpen" class="profile-actions" @click.stop>
+      <div class="option" @click="">
+        <img src="/assets/icon-pencil.svg" alt="Profile" class="icon" />
+        <p class="text-preset-4">Profile</p>
+      </div>
+      <div class="option" @click="logoutUser">
+        <img src="/assets/icon-logout.svg" alt="Logout" class="icon" />
+        <p class="text-preset-4">Logout</p>
+      </div>
+    </div>
   </header>
 </template>
 
@@ -56,6 +92,7 @@ const router = useRouter();
   justify-content: space-between;
   padding: 0 1rem;
   background-color: var(--blue-900);
+  position: relative;
 }
 
 .logo {
@@ -95,6 +132,48 @@ const router = useRouter();
   border-radius: 50%;
 }
 
+.profile-actions {
+  width: 7.5rem;
+  height: 5.875rem;
+  padding: 1.125rem 1.25rem;
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border-radius: 1.25rem;
+  border: none;
+  background-color: var(--blue-900);
+  z-index: 5;
+}
+
+.profile-actions .option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  gap: 0.5rem;
+}
+
+.profile-actions .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.profile-actions .text-preset-4 {
+  font-weight: var(--text-light);
+  color: white;
+}
+
+.profile-actions .option:hover {
+  cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(42%) sepia(63%) saturate(3949%)
+    hue-rotate(337deg) brightness(103%) contrast(97%);
+}
+
 @media (min-width: 768px) {
   .navbar {
     width: calc(100% - 3rem);
@@ -125,6 +204,11 @@ const router = useRouter();
     width: 2rem;
     height: 2rem;
   }
+
+  .profile-actions {
+    right: 0;
+    border-radius: 0.625rem;
+  }
 }
 
 @media (min-width: 1024px) and (min-height: 512px) {
@@ -151,6 +235,14 @@ const router = useRouter();
   .profile-icon {
     width: 2.5rem;
     height: 2.5rem;
+  }
+
+  .profile-actions {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 6.5rem;
+    border-radius: 1.25rem;
   }
 }
 </style>

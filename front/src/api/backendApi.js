@@ -64,7 +64,7 @@ backendApi.interceptors.response.use(
       return backendApi(original);
     } catch (error) {
       const store = authTokenStore();
-      if (typeof store.clearSession === "function") store.clearSession();
+      store.clearSession();
       return Promise.reject(error);
     }
   }

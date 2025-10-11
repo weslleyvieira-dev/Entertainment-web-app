@@ -61,7 +61,6 @@ onBeforeUnmount(() => clearTimeout(timer));
 .search-input {
   width: 100%;
   color: white;
-  cursor: pointer;
   border: none;
   background-color: transparent;
 }

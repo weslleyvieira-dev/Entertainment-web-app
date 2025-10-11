@@ -63,4 +63,26 @@ export default class AuthService {
       data: response.data,
     };
   }
+
+  async logoutUser() {
+    const token = localStorage.getItem("accessToken");
+    const response = await backendApi.post(
+      "/auth/logout",
+      {},
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      }
+    );
+
+    const store = authTokenStore();
+    store.clearSession();
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
 }
