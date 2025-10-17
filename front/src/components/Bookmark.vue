@@ -37,6 +37,7 @@ async function changeBookmarked() {
           : '/assets/icon-bookmark-full.svg'
       "
       alt="Bookmarked"
+      draggable="false"
       class="icon"
     />
   </div>

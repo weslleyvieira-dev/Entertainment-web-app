@@ -107,7 +107,7 @@ function clearError(field) {
 
 <template>
   <div class="resetPassword-layout">
-    <img src="/assets/logo.svg" alt="Logo" class="logo" />
+    <img src="/assets/logo.svg" alt="Logo" draggable="false" class="logo" />
     <form
       id="resetPassword-form"
       @submit.prevent="handleResetPassword"

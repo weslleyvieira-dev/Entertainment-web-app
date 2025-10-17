@@ -82,7 +82,7 @@ function clearError(field) {
 
 <template>
   <div class="forgotPassword-layout">
-    <img src="/assets/logo.svg" alt="Logo" class="logo" />
+    <img src="/assets/logo.svg" alt="Logo" draggable="false" class="logo" />
     <form
       id="forgotPassword-form"
       @submit.prevent="handleForgotPassword"

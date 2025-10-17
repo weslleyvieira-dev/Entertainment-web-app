@@ -51,11 +51,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
         class="trailer-link text-preset-4"
         @click.prevent="openTrailer"
       >
-        <img src="/assets/icon-play.svg" alt="Play Trailer" class="trailer" />
+        <img
+          src="/assets/icon-play.svg"
+          alt="Play Trailer"
+          draggable="false"
+          class="trailer"
+        />
         <span class="play-text"> Play </span>
       </button>
     </div>
-    <img :src="imgSrc" :alt="item.title" class="thumb-img" />
+    <img :src="imgSrc" :alt="item.title" draggable="false" class="thumb-img" />
     <Bookmark :item="item" />
     <div class="thumb-details">
       <ul class="thumb-infos">
@@ -67,6 +72,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
             <img
               :src="categoryIcon"
               :alt="categoryLabel"
+              draggable="false"
               class="img-category"
             />
             {{ categoryLabel }}
@@ -88,7 +94,11 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <button class="close-btn" @click="closeTrailer" aria-label="Fechar">
-            <img src="/assets/icon-close.svg" alt="Close Trailer" />
+            <img
+              src="/assets/icon-close.svg"
+              alt="Close Trailer"
+              draggable="false"
+            />
           </button>
         </div>
         <div class="trailer-frame-wrap">

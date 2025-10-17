@@ -31,7 +31,7 @@ onBeforeUnmount(() => clearTimeout(timer));
 
 <template>
   <div class="search-box">
-    <img src="/assets/icon-magnify.svg" class="search-icon" />
+    <img src="/assets/icon-magnify.svg" draggable="false" class="search-icon" />
     <input
       id="query"
       type="text"

@@ -91,7 +91,7 @@ function clearError(field) {
 
 <template>
   <div class="login-layout">
-    <img src="/assets/logo.svg" alt="Logo" class="logo" />
+    <img src="/assets/logo.svg" alt="Logo" draggable="false" class="logo" />
     <form id="login-form" @submit.prevent="handleLogin" class="login-container">
       <h1 class="text-preset-1">Login</h1>
       <div class="login-inputs">

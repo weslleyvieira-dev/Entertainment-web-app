@@ -32,23 +32,26 @@ onBeforeUnmount(() => {
 
 <template>
   <header class="navbar">
-    <img src="/assets/logo.svg" alt="Logo" class="logo" />
+    <img src="/assets/logo.svg" alt="Logo" draggable="false" class="logo" />
     <div class="pages">
       <img
         src="/assets/icon-nav-home.svg"
         alt="Home"
+        draggable="false"
         :class="{ active: route.name === 'Home' }"
         @click="route.name !== 'Home' && router.push({ name: 'Home' })"
       />
       <img
         src="/assets/icon-nav-movies.svg"
         alt="Movies"
+        draggable="false"
         :class="{ active: route.name === 'Movies' }"
         @click="route.name !== 'Movies' && router.push({ name: 'Movies' })"
       />
       <img
         src="/assets/icon-nav-tv-series.svg"
         alt="TV Series"
+        draggable="false"
         :class="{ active: route.name === 'TV Series' }"
         @click="
           route.name !== 'TV Series' && router.push({ name: 'TV Series' })
@@ -57,6 +60,7 @@ onBeforeUnmount(() => {
       <img
         src="/assets/icon-nav-bookmark.svg"
         alt="Bookmarkeds"
+        draggable="false"
         class="img-bookmarks"
         :class="{ active: route.name === 'Bookmarkeds' }"
         @click="
@@ -67,6 +71,7 @@ onBeforeUnmount(() => {
     <img
       src="/assets/icon-nav-profile.svg"
       alt="Profile"
+      draggable="false"
       class="profile-icon"
       @click.stop="toggleProfileActions"
     />
@@ -76,11 +81,21 @@ onBeforeUnmount(() => {
         :class="{ active: route.name === 'Account' }"
         @click="route.name !== 'Account' && router.push({ name: 'Account' })"
       >
-        <img src="/assets/icon-pencil.svg" alt="Profile" class="icon" />
+        <img
+          src="/assets/icon-pencil.svg"
+          alt="Profile"
+          draggable="false"
+          class="icon"
+        />
         <p class="text-preset-4">Profile</p>
       </div>
       <div class="option" @click="logoutUser">
-        <img src="/assets/icon-logout.svg" alt="Logout" class="icon" />
+        <img
+          src="/assets/icon-logout.svg"
+          alt="Logout"
+          draggable="false"
+          class="icon"
+        />
         <p class="text-preset-4">Logout</p>
       </div>
     </div>
