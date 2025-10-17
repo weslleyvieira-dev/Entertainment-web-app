@@ -345,12 +345,10 @@ export class UserController {
   async updateEmail(req, res) {
     try {
       const userId = req.userId;
-      let user = await userService.findUserById(userId);
-      let { email, newEmail, password } = req.body;
+      const user = await userService.findUserById(userId);
+      let { newEmail } = req.body;
 
-      email = email ? email.trim().toLowerCase() : null;
       newEmail = newEmail ? newEmail.trim().toLowerCase() : null;
-      password = password ? password.trim() : null;
 
       if (!user) {
         throw {
@@ -359,28 +357,14 @@ export class UserController {
         };
       }
 
-      if (!email || !newEmail || !password) {
+      if (!newEmail) {
         throw {
           status: 422,
           message: "All fields are required.",
         };
       }
 
-      if (email === newEmail) {
-        throw {
-          status: 422,
-          message: "Your new email is the same as your current one.",
-        };
-      }
-
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!emailRegex.test(email)) {
-        throw {
-          status: 422,
-          message: "Invalid email format.",
-        };
-      }
-
       if (!emailRegex.test(newEmail)) {
         throw {
           status: 422,
@@ -388,15 +372,7 @@ export class UserController {
         };
       }
 
-      const checkEmail = await userService.findUserByEmail(email);
       const checkNewEmail = await userService.findUserByEmail(newEmail);
-
-      if (!checkEmail || checkEmail.email !== user.email) {
-        throw {
-          status: 401,
-          message: "Invalid credentials.",
-        };
-      }
       if (checkNewEmail) {
         throw {
           status: 409,
@@ -404,20 +380,12 @@ export class UserController {
         };
       }
 
-      const checkPassword = await bcrypt.compare(password, user.password);
-
-      if (!checkPassword) {
-        throw {
-          status: 401,
-          message: "Invalid credentials.",
-        };
-      }
-
-      user = await userService.updateEmail(userId, newEmail);
+      const oldEmail = user.email;
+      const updatedUser = await userService.updateEmail(userId, newEmail);
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,
-        to: [user.email, email],
+        to: [updatedUser.email, oldEmail],
         subject: "Your email address has been updated",
         template: "notifyDataUpdated",
       };
@@ -434,7 +402,7 @@ export class UserController {
       return res.status(200).json({
         message: "Email updated successfully.",
         id: user.id,
-        email: user.email,
+        email: newEmail,
       });
     } catch (error) {
       return res
@@ -448,13 +416,10 @@ export class UserController {
       const userId = req.userId;
 
       let user = await userService.findUserById(userId);
-      let { password, newPassword, newPasswordConfirm } = req.body;
+      let { password, newPassword } = req.body;
 
       password = password ? password.trim() : null;
       newPassword = newPassword ? newPassword.trim() : null;
-      newPasswordConfirm = newPasswordConfirm
-        ? newPasswordConfirm.trim()
-        : null;
 
       if (!user) {
         throw {
@@ -463,10 +428,17 @@ export class UserController {
         };
       }
 
-      if (!password || !newPassword || !newPasswordConfirm) {
+      if (!password || !newPassword) {
         throw {
           status: 422,
           message: "All fields are required.",
+        };
+      }
+
+      if (password.length < 8 || newPassword.length < 8) {
+        throw {
+          status: 422,
+          message: "Password must be at least 8 characters.",
         };
       }
 
@@ -474,20 +446,6 @@ export class UserController {
         throw {
           status: 422,
           message: "Your new password is the same as your current one.",
-        };
-      }
-
-      if (newPassword.length < 8 || newPasswordConfirm.length < 8) {
-        throw {
-          status: 422,
-          message: "Password must be at least 8 characters.",
-        };
-      }
-
-      if (newPassword !== newPasswordConfirm) {
-        throw {
-          status: 422,
-          message: "Password and confirmation password do not match.",
         };
       }
 

@@ -71,7 +71,11 @@ onBeforeUnmount(() => {
       @click.stop="toggleProfileActions"
     />
     <div v-if="isActionsOpen" class="profile-actions" @click.stop>
-      <div class="option" @click="">
+      <div
+        class="option"
+        :class="{ active: route.name === 'Account' }"
+        @click="route.name !== 'Account' && router.push({ name: 'Account' })"
+      >
         <img src="/assets/icon-pencil.svg" alt="Profile" class="icon" />
         <p class="text-preset-4">Profile</p>
       </div>
@@ -156,6 +160,11 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: left;
   gap: 0.5rem;
+}
+
+.profile-actions .option.active {
+  cursor: default !important;
+  filter: brightness(0) invert(1) !important;
 }
 
 .profile-actions .icon {

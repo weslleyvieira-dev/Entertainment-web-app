@@ -10,6 +10,7 @@ const Home = () => import("@/pages/Home.vue");
 const Movies = () => import("@/pages/Movies.vue");
 const TVSeries = () => import("@/pages/TVSeries.vue");
 const Bookmarkeds = () => import("@/pages/Bookmarked.vue");
+const Account = () => import("@/pages/Account.vue");
 
 const router = createRouter({
   history: createWebHistory(),
@@ -52,6 +53,7 @@ const router = createRouter({
           name: "Bookmarkeds",
           component: Bookmarkeds,
         },
+        { path: "/account", name: "Account", component: Account },
       ],
     },
   ],

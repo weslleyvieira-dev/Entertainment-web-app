@@ -64,6 +64,43 @@ export default class AuthService {
     };
   }
 
+  async updateEmail(newEmail) {
+    const token = localStorage.getItem("accessToken");
+    const response = await backendApi.put(
+      `/me/email`,
+      { newEmail },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      }
+    );
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
+
+  async updatePassword(data) {
+    const { password, newPassword } = data;
+    const token = localStorage.getItem("accessToken");
+    const response = await backendApi.put(
+      `/me/password`,
+      { password, newPassword },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      }
+    );
+
+    return {
+      status: response.status,
+      data: response.data,
+    };
+  }
+
   async logoutUser() {
     const token = localStorage.getItem("accessToken");
     const response = await backendApi.post(
