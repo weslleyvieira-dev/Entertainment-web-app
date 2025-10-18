@@ -87,6 +87,12 @@ function handleError(error) {
 function clearError(field) {
   errors[field] = "";
 }
+
+function handleRecruiter() {
+  loginData.email = "demo@account.com";
+  loginData.password = "demo@account.com";
+  handleLogin();
+}
 </script>
 
 <template>
@@ -142,6 +148,11 @@ function clearError(field) {
       </div>
     </form>
     <Loading v-if="isSubmitted" />
+    <div class="recruiter">
+      <SubmitButton @click="handleRecruiter" class="text-preset-4 recruiter-btn"
+        >Continue with demo account</SubmitButton
+      >
+    </div>
   </div>
 </template>
 
@@ -243,6 +254,13 @@ function clearError(field) {
   text-decoration: underline;
 }
 
+.recruiter {
+  position: absolute;
+  bottom: 3rem;
+  width: 100dvw;
+  padding: 0 3rem;
+}
+
 @media (min-width: 768px) {
   .login-layout {
     padding: 5rem 1.5rem 0;
@@ -253,6 +271,11 @@ function clearError(field) {
     border-radius: 1.25rem;
     margin-top: 5rem;
     padding: 2rem;
+  }
+
+  .recruiter {
+    width: 25rem;
+    padding: 0 2rem;
   }
 }
 </style>
