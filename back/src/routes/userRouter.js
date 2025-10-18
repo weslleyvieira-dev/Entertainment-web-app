@@ -22,15 +22,9 @@ const userController = new UserController();
  *           schema:
  *             type: object
  *             properties:
- *               email:
- *                 type: string
- *                 example: "old@email.com"
  *               newEmail:
  *                 type: string
  *                 example: "new@email.com"
- *               password:
- *                 type: string
- *                 example: "yourPassword123"
  *     responses:
  *       200:
  *         description: Email updated successfully.
@@ -85,7 +79,17 @@ const userController = new UserController();
  *               properties:
  *                 error:
  *                   type: string
- *                   example: All fields are required.
+ *                   example: Invalid new email format.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -120,9 +124,6 @@ router.put("/email", checkToken, userController.updateEmail);
  *                 type: string
  *                 example: "currentPassword123"
  *               newPassword:
- *                 type: string
- *                 example: "newPassword456"
- *               newPasswordConfirm:
  *                 type: string
  *                 example: "newPassword456"
  *     responses:
@@ -170,6 +171,16 @@ router.put("/email", checkToken, userController.updateEmail);
  *                 error:
  *                   type: string
  *                   example: All fields are required.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -224,6 +235,16 @@ router.put("/password", checkToken, userController.updatePassword);
  *                 error:
  *                   type: string
  *                   example: User not found.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -257,7 +278,7 @@ router.post("/request-delete", checkToken, userController.requestDeleteUser);
  *       204:
  *         description: User deleted successfully.
  *       400:
- *         description: Invalid or expired token.
+ *         description: Invalid or expired reset link.
  *         content:
  *           application/json:
  *             schema:
@@ -265,7 +286,7 @@ router.post("/request-delete", checkToken, userController.requestDeleteUser);
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Invalid or expired delete link.
+ *                   example: Invalid or expired reset link.
  *       404:
  *         description: User not found.
  *         content:
@@ -276,6 +297,16 @@ router.post("/request-delete", checkToken, userController.requestDeleteUser);
  *                 error:
  *                   type: string
  *                   example: User not found.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
