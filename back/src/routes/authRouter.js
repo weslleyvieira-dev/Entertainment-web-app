@@ -66,6 +66,16 @@ const tokenController = new TokenController();
  *                 error:
  *                   type: string
  *                   example: All fields are required.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -86,7 +96,7 @@ router.post("/register", userController.registerUser);
  *     tags:
  *       - Auth
  *     summary: User login
- *     description: Authenticates a user and returns a JWT token.
+ *     description: Authenticates a user, sets a refresh token cookie, and returns an access token.
  *     security: []
  *     requestBody:
  *       required: true
@@ -109,16 +119,15 @@ router.post("/register", userController.registerUser);
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 accessToken:
  *                   type: string
- *                   example: Login successful.
  *                 user:
  *                   type: object
  *                   properties:
+ *                     id:
+ *                       type: string
  *                     email:
  *                       type: string
- *                 accessToken:
- *                   type: string
  *       401:
  *         description: Invalid credentials.
  *         content:
@@ -159,7 +168,7 @@ router.post("/login", userController.loginUser);
  *     tags:
  *       - Auth
  *     summary: User logout
- *     description: Logs out the authenticated user.
+ *     description: Logs out the authenticated user, revoking tokens and clearing the refresh cookie.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -183,16 +192,6 @@ router.post("/login", userController.loginUser);
  *                 error:
  *                   type: string
  *                   example: Unauthorized - Invalid or missing token.
- *       404:
- *         description: No active session found.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: No active session found.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -299,6 +298,16 @@ router.post("/refresh-token", tokenController.refreshToken);
  *                 error:
  *                   type: string
  *                   example: Email is required.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
@@ -372,6 +381,16 @@ router.post("/password/forgot", userController.forgotPassword);
  *                 error:
  *                   type: string
  *                   example: All fields are required.
+ *       503:
+ *         description: Error sending email.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Error sending email, try again later.
  *       500:
  *         description: Internal server error.
  *         content:
