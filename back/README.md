@@ -58,8 +58,9 @@ GOOGLE_CLIENT_ID=      # Google OAuth client ID
 GOOGLE_CLIENT_SECRET=  # Google OAuth client secret
 GOOGLE_REFRESH_TOKEN=  # Google OAuth refresh token
 
-# Jobs
-CRON_SECRET=           # Cron secret
+# KV
+KV_REST_API_URL=       # Upstash KV REST URL
+KV_REST_API_TOKEN=     # Upstash KV REST token
 ```
 
 <h3>🗄️ Database</h3>
