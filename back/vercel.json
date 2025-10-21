@@ -2,5 +2,8 @@
   "version": 2,
   "builds": [{ "src": "src/index.js", "use": "@vercel/node" }],
   "routes": [{ "src": "/(.*)", "dest": "src/index.js" }],
-  "crons": [{ "path": "/api/prefetch", "schedule": "0 0 * * *" }]
+  "crons": [
+    { "path": "/api/prefetch", "schedule": "0 0 * * *" },
+    { "path": "/api/prefetch", "schedule": "0 12 * * *" }
+  ]
 }

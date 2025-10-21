@@ -1,5 +1,5 @@
 import { Router } from "express";
-import NodeCache from "node-cache";
+import { createClient } from "@vercel/kv";
 import {
   prefetchTrending,
   prefetchPopular,
@@ -8,7 +8,42 @@ import {
 
 const router = Router();
 const TMDB_BASE = "https://api.themoviedb.org/3";
-const cache = new NodeCache({ stdTTL: 43200 });
+const CACHE_TTL_SECONDS = 43200;
+
+const kvClient = createClient({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
+
+const KV_PREFIX = `tmdb:${
+  process.env.VERCEL_PROJECT_PRODUCTION_URL || "shared"
+}:${process.env.VERCEL_ENV || "local"}`;
+
+const cache = {
+  get: async (key) => {
+    try {
+      return await kvClient.get(`${KV_PREFIX}:${key}`);
+    } catch (error) {
+      console.error("[KV] get fail:", error?.message || error);
+      return null;
+    }
+  },
+  set: async (key, value, ttl) => {
+    try {
+      return await kvClient.set(`${KV_PREFIX}:${key}`, value, { ex: ttl });
+    } catch (error) {
+      console.error("[KV] set fail:", error?.message || error);
+    }
+  },
+  ttl: async (key) => {
+    try {
+      return await kvClient.ttl(`${KV_PREFIX}:${key}`);
+    } catch (error) {
+      console.error("[KV] ttl fail:", error?.message || error);
+      return null;
+    }
+  },
+};
 
 async function runAllPrefetch() {
   const jobs = [
@@ -20,18 +55,11 @@ async function runAllPrefetch() {
     prefetchCurrentlyList(cache, "movie"),
     prefetchCurrentlyList(cache, "tv"),
   ];
-  try {
-    await Promise.all(jobs);
-  } catch (error) {
-    throw new Error(
-      `[Prefetch] Some prefetch jobs failed: ${error?.message ?? String(error)}`
-    );
-  }
+  await Promise.all(jobs);
 }
 
 router.get("/prefetch", async (req, res) => {
-  const auth = req.headers.authorization || req.headers.Authorization;
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!req.headers["x-vercel-cron"]) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
@@ -45,10 +73,13 @@ router.get("/prefetch", async (req, res) => {
 });
 
 router.use(async (req, res) => {
-  const cacheKey = req.url + (req.query.page ? `?page=${req.query.page}` : "");
-  const cached = cache.get(cacheKey);
+  const cacheKey = req.url;
+  const cached = await cache.get(cacheKey);
   if (cached) {
-    res.set("Content-Type", cached.contentType);
+    if (cached.contentType) res.set("Content-Type", cached.contentType);
+    const ttlSec = await cache.ttl(cacheKey);
+    const remaining = ttlSec && ttlSec > 0 ? ttlSec : CACHE_TTL_SECONDS;
+    res.set("Cache-Control", `public, max-age=${remaining}`);
     return res.status(200).send(cached.body);
   }
   try {
@@ -62,15 +93,28 @@ router.use(async (req, res) => {
     const contentType = tmdbResponse.headers.get("content-type");
     const body = await tmdbResponse.text();
     if (tmdbResponse.ok) {
-      cache.set(cacheKey, { contentType, body });
+      await cache.set(cacheKey, { contentType, body }, CACHE_TTL_SECONDS);
+      if (contentType) res.set("Content-Type", contentType);
+      res.set("Cache-Control", `public, max-age=${CACHE_TTL_SECONDS}`);
+      return res.status(200).send(body);
     }
+
     if (contentType) res.set("Content-Type", contentType);
-    res.set("Cache-Control", "public, max-age=43200");
-    return res.status(200).send(body);
+    const status = tmdbResponse.status || 502;
+    try {
+      const parsed = JSON.parse(body);
+      return res.status(status).json({
+        error: `[TMDB Proxy Error] ${req.url}`,
+        details: parsed,
+      });
+    } catch {
+      return res.status(status).send(body);
+    }
   } catch (error) {
+    console.error("[TMDB Proxy] Request failed:", error);
     return res
       .status(500)
-      .json({ error: `[TMDB Proxy Error] ${req.url}:`, error });
+      .json({ error: `[TMDB Proxy Error] ${req.url}`, details: String(error) });
   }
 });
 
