@@ -26,7 +26,8 @@ const emit = defineEmits(["click"]);
   background-color: var(--red-500);
 }
 
-.submit-button:hover {
+.submit-button:hover,
+.submit-button:focus {
   cursor: pointer;
   color: var(--blue-950);
   background-color: white;
