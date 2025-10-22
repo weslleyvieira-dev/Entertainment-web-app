@@ -16,9 +16,18 @@ function closeActions() {
   if (isActionsOpen.value) isActionsOpen.value = false;
 }
 
+function onOptionClick(target) {
+  isActionsOpen.value = false;
+  if (route.name !== target) router.push({ name: target });
+}
+
 async function logoutUser() {
-  await authService.logoutUser();
-  router.push({ name: "Login" });
+  isActionsOpen.value = false;
+  try {
+    await authService.logoutUser();
+  } finally {
+    router.push({ name: "Login" });
+  }
 }
 
 onMounted(() => {
@@ -79,7 +88,7 @@ onBeforeUnmount(() => {
       <div
         class="option"
         :class="{ active: route.name === 'Account' }"
-        @click="route.name !== 'Account' && router.push({ name: 'Account' })"
+        @click="onOptionClick('Account')"
       >
         <img
           src="/assets/icon-pencil.svg"
