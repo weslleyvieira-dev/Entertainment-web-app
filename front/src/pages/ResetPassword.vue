@@ -5,6 +5,7 @@ import { useToast } from "vue-toastification";
 import SubmitButton from "@/components/SubmitButton.vue";
 import AuthService from "@/services/authService";
 import Loading from "@/components/Loading.vue";
+import InputContainer from "@/components/InputContainer.vue";
 
 const authService = new AuthService();
 const router = useRouter();
@@ -115,38 +116,22 @@ function clearError(field) {
     >
       <h1 class="text-preset-1">Reset Password</h1>
       <div class="resetPassword-inputs">
-        <div class="input-container">
-          <input
-            name="password"
-            v-model.trim="resetPasswordData.newPassword"
-            type="password"
-            placeholder="New password"
-            aria-label="New password"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.newPassword }"
-            @focus="clearError('newPassword')"
-          />
-          <span v-if="errors.newPassword" class="text-preset-5 error-message">{{
-            errors.newPassword
-          }}</span>
-        </div>
-        <div class="input-container">
-          <input
-            name="passwordConfirmation"
-            v-model.trim="resetPasswordData.newPasswordConfirm"
-            type="password"
-            placeholder="Repeat password"
-            aria-label="Repeat password"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.newPasswordConfirm }"
-            @focus="clearError('newPasswordConfirm')"
-          />
-          <span
-            v-if="errors.newPasswordConfirm"
-            class="text-preset-5 error-message"
-            >{{ errors.newPasswordConfirm }}</span
-          >
-        </div>
+        <InputContainer
+          name="newPassword"
+          v-model="resetPasswordData.newPassword"
+          type="password"
+          placeholder="New password"
+          :error="errors.newPassword"
+          @focus="clearError('newPassword')"
+        />
+        <InputContainer
+          name="newPasswordConfirm"
+          v-model="resetPasswordData.newPasswordConfirm"
+          type="password"
+          placeholder="Repeat password"
+          :error="errors.newPasswordConfirm"
+          @focus="clearError('newPasswordConfirm')"
+        />
       </div>
       <div class="resetPassword-submits">
         <SubmitButton>Set new password</SubmitButton>
@@ -195,63 +180,6 @@ function clearError(field) {
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-}
-
-.input-item {
-  font-weight: var(--text-light);
-  font-size: 0.938rem;
-  width: 100%;
-  color: white;
-  padding: 0 1rem 1rem;
-  border: none;
-  border-bottom: 1px solid var(--blue-500);
-  background: transparent;
-  -webkit-text-fill-color: white !important;
-  box-shadow: 0 0 0px 1000px var(--blue-900) inset !important;
-}
-
-.input-item:focus,
-.input-item:hover {
-  border-bottom: 1px solid white;
-}
-
-.input-item::placeholder {
-  color: white;
-  opacity: 0.5;
-}
-
-.input-container {
-  position: relative;
-}
-
-.input-item.error {
-  border-bottom: 1px solid var(--red-500);
-}
-
-.error-message {
-  position: absolute;
-  padding: 0 1rem;
-  right: 0;
-  bottom: 1.117rem;
-  font-weight: var(--text-light);
-  color: var(--red-500);
-  background-color: var(--blue-900);
-}
-
-.signup-prompt {
-  font-weight: var(--text-light);
-  text-align: center;
-  color: white;
-}
-
-.signup-prompt a {
-  color: var(--red-500);
-  padding-left: 0.5rem;
-}
-
-.signup-prompt a:hover {
-  cursor: pointer;
-  text-decoration: underline;
 }
 
 @media (min-width: 768px) {

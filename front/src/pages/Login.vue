@@ -5,6 +5,7 @@ import { useToast } from "vue-toastification";
 import SubmitButton from "@/components/SubmitButton.vue";
 import AuthService from "@/services/authService";
 import Loading from "@/components/Loading.vue";
+import InputContainer from "@/components/InputContainer.vue";
 
 const authService = new AuthService();
 const router = useRouter();
@@ -101,36 +102,22 @@ function handleRecruiter() {
     <form id="login-form" @submit.prevent="handleLogin" class="login-container">
       <h1 class="text-preset-1">Login</h1>
       <div class="login-inputs">
-        <div class="input-container">
-          <input
-            name="email"
-            v-model.trim="loginData.email"
-            type="text"
-            placeholder="Email address"
-            aria-label="Email address"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.email }"
-            @focus="clearError('email')"
-          />
-          <span v-if="errors.email" class="text-preset-5 error-message">{{
-            errors.email
-          }}</span>
-        </div>
-        <div class="input-container">
-          <input
-            name="password"
-            v-model.trim="loginData.password"
-            type="password"
-            placeholder="Password"
-            aria-label="Password"
-            class="text-preset-4 input-item"
-            :class="{ error: errors.password }"
-            @focus="clearError('password')"
-          />
-          <span v-if="errors.password" class="text-preset-5 error-message">{{
-            errors.password
-          }}</span>
-        </div>
+        <InputContainer
+          name="email"
+          v-model="loginData.email"
+          type="text"
+          placeholder="Email address"
+          :error="errors.email"
+          @focus="clearError('email')"
+        />
+        <InputContainer
+          name="password"
+          v-model="loginData.password"
+          type="password"
+          placeholder="Password"
+          :error="errors.password"
+          @focus="clearError('password')"
+        />
         <h4 class="text-preset-4 signup-prompt">
           Forgot your password?<a
             @click="router.push({ name: 'Forgot Password' })"
@@ -195,47 +182,6 @@ function handleRecruiter() {
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-}
-
-.input-item {
-  font-weight: var(--text-light);
-  font-size: 0.938rem;
-  width: 100%;
-  color: white;
-  padding: 0 1rem 1rem;
-  border: none;
-  border-bottom: 1px solid var(--blue-500);
-  background: transparent;
-  -webkit-text-fill-color: white !important;
-  box-shadow: 0 0 0px 1000px var(--blue-900) inset !important;
-}
-
-.input-item:focus,
-.input-item:hover {
-  border-bottom: 1px solid white;
-}
-
-.input-item::placeholder {
-  color: white;
-  opacity: 0.5;
-}
-
-.input-container {
-  position: relative;
-}
-
-.input-item.error {
-  border-bottom: 1px solid var(--red-500);
-}
-
-.error-message {
-  position: absolute;
-  padding: 0 1rem;
-  right: 0;
-  bottom: 1.117rem;
-  font-weight: var(--text-light);
-  color: var(--red-500);
-  background-color: var(--blue-900);
 }
 
 .signup-prompt {
