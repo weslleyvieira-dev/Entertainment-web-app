@@ -16,10 +16,24 @@ model User {
   id                   String         @id @default(uuid())
   email                String         @unique
   password             String
-  movies               Int[]
-  series               Int[]
+  lists                List[]
   refresh_token        RefreshToken[]
   password_reset_token EmailToken[]
+}
+
+model List {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  slug      String
+  movies    Int[]
+  series    Int[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@unique([userId, slug])
 }
 
 model RefreshToken {
