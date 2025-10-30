@@ -3,9 +3,12 @@ import dayjs from "dayjs";
 import transporter from "../configs/mailer.js";
 import { UserService } from "../services/userService.js";
 import { TokenService } from "../services/tokenService.js";
+import { ListService } from "../services/listService.js";
 
 const userService = new UserService();
 const tokenService = new TokenService();
+const listService = new ListService();
+
 const frontBaseUrl =
   process.env.NODE_ENV === "production"
     ? "https://watch-wellsz.vercel.app"
@@ -74,6 +77,7 @@ export class UserController {
       };
 
       const createdUser = await userService.registerUser(user);
+      listService.createList(createdUser.id, "Watchlist", "watchlist");
 
       const mailOptions = {
         from: process.env.GOOGLE_USER,

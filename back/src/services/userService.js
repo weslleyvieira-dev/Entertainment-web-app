@@ -9,6 +9,7 @@ export class UserService {
         password,
       },
       select: {
+        id: true,
         email: true,
       },
     });
