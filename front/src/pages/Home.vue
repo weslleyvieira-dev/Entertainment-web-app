@@ -1,19 +1,17 @@
 <script setup>
 import { ref, onBeforeMount } from "vue";
+import { storeToRefs } from "pinia";
 import { useToast } from "vue-toastification";
-import { useBookmarkStore } from "@/stores/bookmarkStore";
-import BookmarkService from "@/services/bookmarkService";
+import { useListStore } from "@/stores/listStore";
 import TmdbService from "@/services/tmdbService.js";
 import SearchLayout from "@/layouts/SearchLayout.vue";
 import ThumbTrending from "@/components/ThumbTrending.vue";
 import Loading from "@/components/Loading.vue";
 
 const toast = useToast();
-const bookmarkStore = useBookmarkStore();
-const bookmarkService = new BookmarkService();
+const listStore = useListStore();
 const tmdbService = new TmdbService();
 const isLoading = ref(true);
-const bookmarks = ref({});
 const trendingItems = ref([]);
 const inTheatres = ref([]);
 const onTheAir = ref([]);
@@ -26,16 +24,14 @@ function onResults(list) {
 async function fetchData() {
   isLoading.value = true;
   try {
-    const [bookmarksResult, trendingResult, inTheatresResult, onTheAirResult] =
+    const [, trendingResult, inTheatresResult, onTheAirResult] =
       await Promise.all([
-        bookmarkService.getAllBookmarkeds(),
+        listStore.fetchLists(),
         tmdbService.getTrending(),
         tmdbService.getCurrentlyList("movie"),
         tmdbService.getCurrentlyList("tv"),
       ]);
 
-    bookmarks.value = bookmarksResult;
-    bookmarkStore.setBookmarks(bookmarks.value);
     trendingItems.value = trendingResult;
     inTheatres.value = inTheatresResult;
     onTheAir.value = onTheAirResult;

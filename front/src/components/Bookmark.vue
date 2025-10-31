@@ -1,24 +1,27 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useBookmarkStore } from "@/stores/bookmarkStore";
-import BookmarkService from "@/services/bookmarkService";
+import { ref, computed, onMounted } from "vue";
+import { useListStore } from "@/stores/listStore";
 
-const bookmarkStore = useBookmarkStore();
-const bookmarkService = new BookmarkService();
+const listStore = useListStore();
 const hover = ref(false);
 
 const props = defineProps({
   item: { type: Object, required: true },
 });
 const item = props.item;
-const isBookmarked = computed(() => bookmarkStore.isBookmarked(item));
+
+onMounted(async () => {
+  await listStore.ensureListsLoaded();
+});
+
+const watchlistId = computed(() => listStore.watchlist?.id || null);
+const isBookmarked = computed(() =>
+  watchlistId.value ? listStore.isItemInList(watchlistId.value, item) : false
+);
 
 async function changeBookmarked() {
-  item.isBookmarked = isBookmarked.value;
-  await bookmarkService.changeBookmarked(item);
-  bookmarkStore.updateFromLocalStorage();
-  await bookmarkStore.fetchBookmarkedItems();
-  item.isBookmarked = isBookmarked.value;
+  if (!watchlistId.value) return;
+  item.isBookmarked = await listStore.toggleItemInList(watchlistId.value, item);
 }
 </script>
 
