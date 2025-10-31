@@ -1,7 +1,7 @@
 <h1 align="center" style="font-weight: bold;">Frontend - Entertainment Web App</h1>
 
 <p align="center">
-Web App built with Vue 3 (Vite) for browsing movies and TV series, managing bookmarks, and integrating with TMDB via the backend API.
+Web App built with Vue 3 (Vite) for browsing movies and TV series, managing lists, and integrating with TMDB via the backend API.
 </p>
 
 <p align="center">

@@ -1,7 +1,7 @@
 <h1 align="center" style="font-weight: bold;">Backend - Entertainment Web App</h1>
 
 <p align="center">
-REST API for authentication, user management, bookmarks, and TMDB integration.
+REST API for authentication, user management, lists, and TMDB integration.
 </p>
 
 <p align="center">

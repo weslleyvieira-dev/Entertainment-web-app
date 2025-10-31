@@ -32,7 +32,6 @@ const options = {
     security: [{ bearerAuth: [] }],
     tags: [
       { name: "Auth", description: "Authentication routes" },
-      { name: "Bookmarks", description: "Bookmark management routes" },
       { name: "User", description: "User management routes" },
       { name: "Lists", description: "Custom list management routes" },
     ],

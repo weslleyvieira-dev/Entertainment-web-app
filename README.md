@@ -1,7 +1,7 @@
 <h1 align="center" style="font-weight: bold;">Entertainment Web App</h1>
 
 <p align="center">
-Fullstack solution for browsing movies and TV series, managing bookmarks, and user authentication. Built with Vue 3 frontend and Node.js/Express backend, integrating TMDB and PostgreSQL.
+Fullstack solution for browsing movies and TV series, managing lists, and user authentication. Built with Vue 3 frontend and Node.js/Express backend, integrating TMDB and PostgreSQL.
 </p>
 
 <p align="center">
