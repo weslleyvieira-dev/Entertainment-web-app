@@ -130,21 +130,13 @@ export const useListStore = defineStore("list", {
       return arr.includes(item.id);
     },
 
-    async toggleItemInList(listId, item) {
-      const present = this.isItemInList(listId, item);
+    isItemInAnyList(item) {
+      if (!item?.id) return false;
       const type = this.normalizeListType(item.type ?? item.mediaType);
-
-      if (present) {
-        const ok = await this.removeItemFromList({
-          listId,
-          type,
-          itemId: item.id,
-        });
-        return ok ? false : true;
-      } else {
-        await this.addItemToList(listId, { id: item.id, type });
-        return this.isItemInList(listId, item);
-      }
+      return this.lists.some((l) => {
+        const arr = Array.isArray(l[type]) ? l[type] : [];
+        return arr.includes(item.id);
+      });
     },
 
     clear() {

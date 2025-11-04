@@ -1,39 +1,65 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useListStore } from "@/stores/listStore";
 
 const listStore = useListStore();
 const hover = ref(false);
+const showMenu = ref(false);
 
 const props = defineProps({
   item: { type: Object, required: true },
 });
 const item = props.item;
+const lists = computed(() => listStore.lists);
+const isBookmarked = computed(() => listStore.isItemInAnyList(item));
 
-onMounted(async () => {
-  await listStore.ensureListsLoaded();
+function toggleMenu() {
+  showMenu.value = !showMenu.value;
+}
+
+function isIn(list) {
+  const type = listStore.normalizeListType(item.type ?? item.mediaType);
+  const array = list[type];
+  return array.includes(item.id);
+}
+
+async function onToggle(list, checked) {
+  const type = listStore.normalizeListType(item.type ?? item.mediaType);
+  const present = isIn(list);
+
+  if (checked && !present) {
+    await listStore.addItemToList(list.id, { id: item.id, type });
+  } else if (!checked && present) {
+    await listStore.removeItemFromList({
+      listId: list.id,
+      type,
+      itemId: item.id,
+    });
+  }
+}
+
+function onEsc(e) {
+  if (e.key === "Escape") showMenu.value = false;
+}
+
+onMounted(() => {
+  document.addEventListener("keydown", onEsc);
 });
 
-const watchlistId = computed(() => listStore.watchlist?.id || null);
-const isBookmarked = computed(() =>
-  watchlistId.value ? listStore.isItemInList(watchlistId.value, item) : false
-);
-
-async function changeBookmarked() {
-  if (!watchlistId.value) return;
-  item.isBookmarked = await listStore.toggleItemInList(watchlistId.value, item);
-}
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", onEsc);
+});
 </script>
 
 <template>
   <div
-    v-if="isBookmarked"
-    @click="changeBookmarked"
+    @click="toggleMenu"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
     class="bookmark"
   >
     <img
+      v-if="isBookmarked"
       :src="
         hover
           ? '/assets/icon-bookmark-remove.svg'
@@ -43,15 +69,8 @@ async function changeBookmarked() {
       draggable="false"
       class="icon"
     />
-  </div>
-  <div
-    v-else
-    @click="changeBookmarked"
-    @mouseenter="hover = true"
-    @mouseleave="hover = false"
-    class="bookmark"
-  >
     <img
+      v-else
       :src="
         hover
           ? '/assets/icon-bookmark-add.svg'
@@ -60,6 +79,30 @@ async function changeBookmarked() {
       alt="Not Bookmarked"
       class="icon"
     />
+  </div>
+
+  <div v-if="showMenu" class="menu-overlay" @click.self="showMenu = false">
+    <div class="menu-list" @click.stop>
+      <div class="menu-title">
+        <h3 class="text-title text-preset-3">{{ `${item.title} - Lists` }}</h3>
+        <img
+          @click="toggleMenu"
+          src="/assets/icon-close.svg"
+          alt="Close"
+          class="close-btn"
+        />
+      </div>
+      <div v-for="list in lists" :key="list.id" class="options-list">
+        <label class="option">
+          <h4 class="option-name text-preset-4">{{ list.name }}</h4>
+          <input
+            type="checkbox"
+            :checked="isIn(list)"
+            @change="(e) => onToggle(list, e.target.checked)"
+          />
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -92,5 +135,85 @@ async function changeBookmarked() {
 .icon {
   width: 0.813rem;
   height: 1rem;
+}
+
+.menu-overlay {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.menu-list {
+  width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+  resize: none;
+  box-sizing: border-box;
+  border-radius: 1.25rem;
+  background-color: var(--blue-900);
+}
+
+.menu-title {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--blue-500);
+}
+
+.text-title {
+  color: white;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0.15rem;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.option {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  background-color: var(--blue-950);
+  cursor: pointer;
+}
+
+.option-name {
+  width: 90%;
+  font-weight: var(--text-light);
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .menu-list {
+    width: 50%;
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 512px) {
+  .menu-list {
+    width: 25%;
+  }
 }
 </style>
