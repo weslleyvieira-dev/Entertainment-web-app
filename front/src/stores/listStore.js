@@ -13,7 +13,7 @@ export const useListStore = defineStore("list", {
     watchlist: (state) =>
       state.lists.find((l) => l.slug === "watchlist") || null,
     itemsFor: (state) => (listId) =>
-      state.listItems[listId] ?? { moviesItems: [], seriesItems: [] },
+      state.listItems[listId] ?? { movies: [], series: [] },
   },
   actions: {
     async fetchLists() {

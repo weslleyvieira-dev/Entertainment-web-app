@@ -79,21 +79,16 @@ export default class ListService {
     const token = localStorage.getItem("accessToken");
     const { listId, type, itemId } = data;
 
-    let response;
+    const response = await backendApi.delete(
+      `/me/lists/${listId}/items/${type}/${itemId}`,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    try {
-      response = await backendApi.delete(
-        `/me/lists/${listId}/items/${type}/${itemId}`,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    } catch (error) {
-      return error.response;
-    }
     return response;
   }
 
