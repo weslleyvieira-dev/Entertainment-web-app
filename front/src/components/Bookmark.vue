@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useListStore } from "@/stores/listStore";
 
 const listStore = useListStore();
@@ -12,9 +12,16 @@ const props = defineProps({
 const item = props.item;
 const lists = computed(() => listStore.lists);
 const isBookmarked = computed(() => listStore.isItemInAnyList(item));
+const newListName = ref("");
+const creatingNewList = ref(false);
+const inputEl = ref(null);
 
 function toggleMenu() {
   showMenu.value = !showMenu.value;
+  if (!showMenu.value) {
+    newListName.value = "";
+    creatingNewList.value = false;
+  }
 }
 
 function isIn(list) {
@@ -38,8 +45,30 @@ async function onToggle(list, checked) {
   }
 }
 
+function startCreate() {
+  creatingNewList.value = true;
+  nextTick(() => inputEl.value?.focus());
+}
+
+async function submitNewList() {
+  const name = newListName.value.trim();
+  if (!name) return;
+  try {
+    const newList = await listStore.createList(name);
+    const type = listStore.normalizeListType(item.type ?? item.mediaType);
+    await listStore.addItemToList(newList.id, { id: item.id, type });
+  } finally {
+    newListName.value = "";
+    creatingNewList.value = false;
+  }
+}
+
 function onEsc(e) {
-  if (e.key === "Escape") showMenu.value = false;
+  if (e.key === "Escape") {
+    newListName.value = "";
+    creatingNewList.value = false;
+    showMenu.value = false;
+  }
 }
 
 onMounted(() => {
@@ -81,7 +110,7 @@ onBeforeUnmount(() => {
     />
   </div>
 
-  <div v-if="showMenu" class="menu-overlay" @click.self="showMenu = false">
+  <div v-if="showMenu" class="menu-overlay" @click.self="toggleMenu">
     <div class="menu-list" @click.stop>
       <div class="menu-title">
         <h3 class="text-title text-preset-3">{{ `${item.title} - Lists` }}</h3>
@@ -92,6 +121,7 @@ onBeforeUnmount(() => {
           class="close-btn"
         />
       </div>
+
       <div v-for="list in lists" :key="list.id" class="options-list">
         <label class="option">
           <h4 class="option-name text-preset-4">{{ list.name }}</h4>
@@ -99,8 +129,31 @@ onBeforeUnmount(() => {
             type="checkbox"
             :checked="isIn(list)"
             @change="(e) => onToggle(list, e.target.checked)"
+            class="check"
           />
         </label>
+      </div>
+
+      <div v-if="!creatingNewList" class="option" @click="startCreate">
+        <h4 class="option-name text-preset-4">Create new list</h4>
+        <img src="/assets/icon-playlist-plus.svg" alt="Create new list" />
+      </div>
+      <div v-else class="option">
+        <input
+          ref="inputEl"
+          v-model="newListName"
+          class="new-list-input text-preset-4"
+          type="text"
+          placeholder="New list name"
+          @keydown.enter.prevent="submitNewList"
+        />
+        <button
+          class="create-btn"
+          :disabled="!newListName.trim()"
+          @click="submitNewList"
+        >
+          Create
+        </button>
       </div>
     </div>
   </div>
@@ -190,6 +243,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   background-color: var(--blue-950);
@@ -197,12 +251,43 @@ onBeforeUnmount(() => {
 }
 
 .option-name {
-  width: 90%;
+  width: 100%;
   font-weight: var(--text-light);
   color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.check {
+  cursor: pointer;
+}
+
+.new-list-input {
+  width: 100%;
+  padding: 0 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--blue-500);
+  background: var(--blue-900);
+  color: white;
+}
+
+.new-list-input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.create-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--blue-500);
+  background: var(--blue-800);
+  color: white;
+  cursor: pointer;
+}
+
+.create-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 @media (min-width: 768px) {
