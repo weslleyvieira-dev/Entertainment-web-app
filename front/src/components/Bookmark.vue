@@ -204,6 +204,7 @@ onBeforeUnmount(() => {
 
 .menu-list {
   width: 85%;
+  max-height: 60%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -212,6 +213,7 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
   border-radius: 1.25rem;
   background-color: var(--blue-900);
+  overflow-y: scroll;
 }
 
 .menu-title {
@@ -261,6 +263,8 @@ onBeforeUnmount(() => {
 
 .check {
   cursor: pointer;
+  accent-color: var(--yellow-500);
+  border: none;
 }
 
 .new-list-input {
@@ -280,9 +284,13 @@ onBeforeUnmount(() => {
   padding: 0.35rem 0.75rem;
   border-radius: 0.35rem;
   border: 1px solid var(--blue-500);
-  background: var(--blue-800);
+  background: var(--blue-900);
   color: white;
   cursor: pointer;
+}
+
+.create-btn:enabled:hover {
+  background: var(--blue-500);
 }
 
 .create-btn:disabled {
