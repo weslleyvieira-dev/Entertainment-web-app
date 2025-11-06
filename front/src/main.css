@@ -38,6 +38,7 @@ input {
   --blue-900: #161d2f;
   --blue-500: #5a698f;
   --red-500: #fc4747;
+  --yellow-500: #fbc500;
   --gradient: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0) 0%,

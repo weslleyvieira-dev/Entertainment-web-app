@@ -9,7 +9,8 @@ const ResetPassword = () => import("@/pages/ResetPassword.vue");
 const Home = () => import("@/pages/Home.vue");
 const Movies = () => import("@/pages/Movies.vue");
 const TVSeries = () => import("@/pages/TVSeries.vue");
-const Bookmarkeds = () => import("@/pages/Bookmarked.vue");
+const ListDetails = () => import("@/pages/ListDetails.vue");
+const Lists = () => import("@/pages/Lists.vue");
 const Account = () => import("@/pages/Account.vue");
 
 const router = createRouter({
@@ -49,9 +50,14 @@ const router = createRouter({
           component: TVSeries,
         },
         {
-          path: "/bookmarkeds",
-          name: "Bookmarkeds",
-          component: Bookmarkeds,
+          path: "/lists",
+          name: "Lists",
+          component: Lists,
+        },
+        {
+          path: "/lists/:slug",
+          name: "ListDetails",
+          component: ListDetails,
         },
         { path: "/account", name: "Account", component: Account },
       ],

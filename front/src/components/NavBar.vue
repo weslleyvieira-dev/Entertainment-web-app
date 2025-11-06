@@ -71,10 +71,8 @@ onBeforeUnmount(() => {
         alt="Bookmarkeds"
         draggable="false"
         class="img-bookmarks"
-        :class="{ active: route.name === 'Bookmarkeds' }"
-        @click="
-          route.name !== 'Bookmarkeds' && router.push({ name: 'Bookmarkeds' })
-        "
+        :class="{ active: route.name === 'Lists' }"
+        @click="route.name !== 'Lists' && router.push({ name: 'Lists' })"
       />
     </div>
     <img
