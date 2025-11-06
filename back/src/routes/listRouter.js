@@ -199,6 +199,91 @@ router.post("/", checkToken, listController.createList);
 
 /**
  * @swagger
+ * /me/lists:
+ *   put:
+ *     tags:
+ *       - Lists
+ *     summary: Rename a list
+ *     description: Renames an existing list owned by the authenticated user.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [listId, name]
+ *             properties:
+ *               listId:
+ *                 type: string
+ *                 example: "3e6b8587-e571-4ad9-ab1f-181684496464"
+ *               name:
+ *                 type: string
+ *                 example: "Favorites 2025"
+ *     responses:
+ *       200:
+ *         description: List renamed successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id: { type: string }
+ *                 userId: { type: string }
+ *                 name: { type: string }
+ *                 slug: { type: string }
+ *                 movies:
+ *                   type: array
+ *                   items: { type: integer }
+ *                 series:
+ *                   type: array
+ *                   items: { type: integer }
+ *       400:
+ *         description: Invalid input data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "List name is missing or invalid." }
+ *       401:
+ *         description: Unauthorized - Invalid or missing token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "Unauthorized - Invalid or missing token." }
+ *       404:
+ *         description: List not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "List not found." }
+ *       409:
+ *         description: Name/slug conflict for this user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "A list with the same name already exists." }
+ *       500:
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "Internal server error." }
+ */
+router.put("/", checkToken, listController.renameList);
+
+/**
+ * @swagger
  * /me/lists/{id}:
  *   delete:
  *     tags:

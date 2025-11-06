@@ -81,6 +81,52 @@ export class ListController {
     }
   }
 
+  async renameList(req, res) {
+    try {
+      const userId = req.userId;
+      let { listId, name } = req.body;
+      name = name ? name.trim() : null;
+
+      if (!listId) {
+        throw {
+          status: 400,
+          message: "List id is missing or invalid.",
+        };
+      }
+
+      const current = await listService.getList(listId, userId);
+      if (!current) {
+        throw { status: 404, message: "List not found." };
+      }
+
+      if (!name || typeof name !== "string") {
+        throw { status: 400, message: "List name is missing or invalid." };
+      }
+
+      const slug = slugify(name);
+      const userLists = await listService.getUserLists(userId);
+
+      const conflict = userLists.some(
+        (l) =>
+          l.id !== listId &&
+          (l.name.toLowerCase() === name.toLowerCase() || l.slug === slug)
+      );
+      if (conflict) {
+        throw {
+          status: 409,
+          message: "A list with the same name already exists.",
+        };
+      }
+
+      const result = await listService.renameList(listId, { name, slug });
+      return res.status(200).json(result);
+    } catch (error) {
+      return res
+        .status(error.status || 500)
+        .json({ error: error.message || "Internal server error." });
+    }
+  }
+
   async deleteList(req, res) {
     try {
       const userId = req.userId;

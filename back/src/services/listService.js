@@ -47,6 +47,23 @@ export class ListService {
     return result;
   }
 
+  async renameList(listId, data) {
+    const result = await prisma.list.update({
+      where: { id: listId },
+      data,
+      select: {
+        id: true,
+        userId: true,
+        name: true,
+        slug: true,
+        movies: true,
+        series: true,
+      },
+    });
+
+    return result;
+  }
+
   async deleteList(listId) {
     const result = await prisma.list.delete({
       where: {
