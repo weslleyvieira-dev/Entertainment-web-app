@@ -58,7 +58,13 @@ onBeforeMount(async () => {
 <template>
   <Loading v-if="isLoading" />
   <template v-else>
-    <div class="lists-container">
+    <div
+      class="lists-container"
+      :class="{
+        'tablet-row': (lists?.length || 0) <= 1,
+        'desktop-row': (lists?.length || 0) <= 2,
+      }"
+    >
       <div
         class="thumb-container"
         @click="
@@ -191,11 +197,22 @@ onBeforeMount(async () => {
   .thumb-title {
     font-size: 1.5rem;
   }
+
+  .tablet-row {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(13.75rem, calc(50% - 0.5rem))
+    );
+  }
 }
 
 @media (min-width: 1024px) and (min-height: 512px) {
   .lists-container {
     grid-template-columns: repeat(auto-fit, minmax(calc(30% - 0.5rem), 1fr));
+  }
+
+  .desktop-row {
+    grid-template-columns: repeat(auto-fit, minmax(calc(30% - 0.5rem), 35rem));
   }
 }
 </style>
