@@ -49,8 +49,7 @@ export default class ListService {
         "Content-Type": "application/json",
       },
     });
-
-    return response.data;
+    return response;
   }
 
   async addItemToList(listId, item) {
@@ -73,6 +72,19 @@ export default class ListService {
 
     const updatedList = response.data;
     return updatedList;
+  }
+
+  async renameList(listId, name) {
+    const token = localStorage.getItem("accessToken");
+    const payload = { listId, name };
+
+    const response = await backendApi.put(`/me/lists`, payload, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
   }
 
   async removeItemFromList(data) {

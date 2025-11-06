@@ -54,6 +54,18 @@ export const useListStore = defineStore("list", {
       return newList;
     },
 
+    async renameList(id, name) {
+      const updated = await listService.renameList(id, name);
+      const i = this.lists.findIndex((l) => l.id === id);
+      if (i >= 0) {
+        this.lists[i] = updated;
+      } else {
+        this.lists.push(updated);
+      }
+      listService.updateLocalStorage(this.lists);
+      return updated;
+    },
+
     async deleteList(id) {
       const resp = await listService.deleteList(id);
       if (resp?.status >= 200 && resp?.status < 300) {
