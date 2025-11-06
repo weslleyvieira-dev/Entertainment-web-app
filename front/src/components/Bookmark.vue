@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useListStore } from "@/stores/listStore";
+import { storeToRefs } from "pinia";
 
 const listStore = useListStore();
 const hover = ref(false);
@@ -10,7 +11,7 @@ const props = defineProps({
   item: { type: Object, required: true },
 });
 const item = props.item;
-const lists = computed(() => listStore.lists);
+const { lists } = storeToRefs(listStore);
 const isBookmarked = computed(() => listStore.isItemInAnyList(item));
 const newListName = ref("");
 const creatingNewList = ref(false);

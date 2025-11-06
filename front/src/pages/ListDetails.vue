@@ -6,6 +6,7 @@ import TmdbService from "@/services/tmdbService.js";
 import SearchLayout from "@/layouts/SearchLayout.vue";
 import ThumbCard from "@/components/ThumbCard.vue";
 import Loading from "@/components/Loading.vue";
+import { useRoute, useRouter } from "vue-router";
 
 const toast = useToast();
 const listStore = useListStore();
@@ -13,14 +14,18 @@ const tmdbService = new TmdbService();
 const isLoading = ref(true);
 const hasResults = ref(false);
 
-const watchlist = computed(() =>
-  listStore.lists.find((list) => list.slug === "watchlist")
+const route = useRoute();
+const router = useRouter();
+const slug = computed(() => String(route.params.slug || ""));
+const currentList = computed(
+  () => listStore.lists.find((l) => l.slug === slug.value) || null
 );
+const listId = computed(() => currentList.value?.id || "");
 const moviesItems = computed(
-  () => listStore.itemsFor(watchlist.value?.id || "").moviesItems
+  () => listStore.itemsFor(listId.value).moviesItems || []
 );
 const seriesItems = computed(
-  () => listStore.itemsFor(watchlist.value?.id || "").seriesItems
+  () => listStore.itemsFor(listId.value).seriesItems || []
 );
 
 function onResults(list) {
@@ -28,14 +33,14 @@ function onResults(list) {
 }
 
 async function fetchListItems() {
-  if (!watchlist.value) {
+  if (!listId.value) {
     isLoading.value = false;
     return;
   }
 
   try {
     isLoading.value = true;
-    await listStore.fetchListItems(watchlist.value.id);
+    await listStore.fetchListItems(listId.value);
   } catch (error) {
     toast.error(
       "An unexpected error occurred. Please try again later. Error: " +
@@ -46,10 +51,19 @@ async function fetchListItems() {
   }
 }
 
+const searchWatchlist = (query) => {
+  const movies = tmdbService.searchBookmarkedItems(moviesItems.value, query);
+  const series = tmdbService.searchBookmarkedItems(seriesItems.value, query);
+  return [...movies, ...series];
+};
+
 onBeforeMount(async () => {
   try {
-    if (!listStore.lists.length) {
-      await listStore.fetchLists();
+    await listStore.ensureListsLoaded();
+    if (!currentList.value) {
+      toast.error("List not found.");
+      await router.push({ name: "Lists" });
+      return;
     }
   } catch (error) {
     toast.error(
@@ -60,21 +74,14 @@ onBeforeMount(async () => {
   }
 });
 
+watch(() => slug.value, fetchListItems);
 watch(
   () => [
-    watchlist.value?.movies?.join(",") ?? "",
-    watchlist.value?.series?.join(",") ?? "",
+    currentList.value?.movies?.join(",") ?? "",
+    currentList.value?.series?.join(",") ?? "",
   ],
-  async () => {
-    await fetchListItems();
-  }
+  fetchListItems
 );
-
-const searchWatchlist = (query) => {
-  const movies = tmdbService.searchBookmarkedItems(moviesItems.value, query);
-  const series = tmdbService.searchBookmarkedItems(seriesItems.value, query);
-  return [...movies, ...series];
-};
 </script>
 
 <template>
@@ -82,11 +89,13 @@ const searchWatchlist = (query) => {
   <template v-else>
     <SearchLayout
       :searchFn="searchWatchlist"
-      placeholder="Search your watchlist"
+      placeholder="Search in this list"
       @results="onResults"
     >
       <div v-if="!hasResults" class="bookmarked-container">
-        <h1 class="bookmarked-title text-preset-1">Watchlist Movies</h1>
+        <h1 class="bookmarked-title text-preset-1">
+          {{ currentList?.name || "List" }} Movies
+        </h1>
         <ul
           v-if="moviesItems.length > 0"
           class="bookmarked-items"
@@ -99,12 +108,12 @@ const searchWatchlist = (query) => {
             <ThumbCard :item="item" />
           </li>
         </ul>
-        <p v-else class="empty-bookmarks">
-          You have no movies in your watchlist.
-        </p>
+        <p v-else class="empty-bookmarks">You have no movies in this list.</p>
       </div>
       <div v-if="!hasResults" class="bookmarked-container">
-        <h1 class="bookmarked-title text-preset-1">Watchlist Series</h1>
+        <h1 class="bookmarked-title text-preset-1">
+          {{ currentList?.name || "List" }} Series
+        </h1>
         <ul
           v-if="seriesItems.length > 0"
           class="bookmarked-items"
@@ -117,9 +126,7 @@ const searchWatchlist = (query) => {
             <ThumbCard :item="item" />
           </li>
         </ul>
-        <p v-else class="empty-bookmarks">
-          You have no series in your watchlist.
-        </p>
+        <p v-else class="empty-bookmarks">You have no series in this list.</p>
       </div>
     </SearchLayout>
   </template>
