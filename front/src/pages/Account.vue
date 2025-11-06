@@ -121,7 +121,6 @@ function handleError(error) {
         break;
       case 500:
         toast.error("An error occurred on the server. Please try again later.");
-        console.log(error);
         break;
       default:
         toast.warning("An unexpected error occurred. Please try again.");
