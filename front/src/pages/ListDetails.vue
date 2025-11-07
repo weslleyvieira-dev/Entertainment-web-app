@@ -208,7 +208,12 @@ watch(
             </ActionButton>
           </div>
         </div>
-        <h1 class="bookmarked-title text-preset-1">Movies</h1>
+        <h1
+          v-if="moviesItems.length > 0"
+          class="bookmarked-title text-preset-1"
+        >
+          Movies
+        </h1>
         <ul
           v-if="moviesItems.length > 0"
           class="bookmarked-items"
@@ -221,10 +226,14 @@ watch(
             <ThumbCard :item="item" />
           </li>
         </ul>
-        <p v-else class="empty-bookmarks">You have no movies in this list.</p>
       </div>
       <div v-if="!hasResults" class="bookmarked-container">
-        <h1 class="bookmarked-title text-preset-1">TV Series</h1>
+        <h1
+          v-if="seriesItems.length > 0"
+          class="bookmarked-title text-preset-1"
+        >
+          TV Series
+        </h1>
         <ul
           v-if="seriesItems.length > 0"
           class="bookmarked-items"
@@ -237,7 +246,6 @@ watch(
             <ThumbCard :item="item" />
           </li>
         </ul>
-        <p v-else class="empty-bookmarks">You have no series in this list.</p>
       </div>
     </SearchLayout>
     <div
@@ -331,10 +339,6 @@ watch(
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-.empty-bookmarks {
-  color: var(--red-500);
 }
 
 .bookmarked-items {
