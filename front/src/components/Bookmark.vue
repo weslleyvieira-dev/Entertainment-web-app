@@ -2,10 +2,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useListStore } from "@/stores/listStore";
 import { storeToRefs } from "pinia";
+import { useToast } from "vue-toastification";
 
 const listStore = useListStore();
 const hover = ref(false);
 const showMenu = ref(false);
+const toast = useToast();
 
 const props = defineProps({
   item: { type: Object, required: true },
@@ -58,9 +60,10 @@ async function submitNewList() {
     const newList = await listStore.createList(name);
     const type = listStore.normalizeListType(item.type ?? item.mediaType);
     await listStore.addItemToList(newList.id, { id: item.id, type });
-  } finally {
     newListName.value = "";
     creatingNewList.value = false;
+  } catch (error) {
+    toast.error(error.response.data.error || error?.message || error);
   }
 }
 
